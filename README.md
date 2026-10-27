@@ -148,20 +148,13 @@ Trong ứng dụng, bấm nút **"Đăng Nhập"** ở góc trên bên phải đ
 
 ---
 
-## 📘 TÀI LIỆU BÁO CÁO KỸ THUẬT KÈM THEO
+## 📘 TÀI LIỆU BÁO CÁO KỸ THUẬT & MINH CHỨNG KÈM THEO
 1. [Quyển Báo Cáo Kỹ Thuật Đồ Án Môn Học (6 Chương Chuẩn ICTU)](./docs/bao-cao/BAO_CAO_DO_AN_MON_HOC.md)
-2. [Báo Cáo Nghiên Cứu Thực Nghiệm So Sánh Prompt A/B Test (Tiêu Chí 3.2)](./docs/prompt-ab-testing/SO_SANH_PHIEN_BAN_PROMPT.md)
-3. [Báo Cáo Bộ Kiểm Thử Thực Nghiệm TC01 - TC10 (Tiêu Chí 3.1 & 3.3)](./docs/kiem-thu/HUONG_DAN_KIEM_THU_TC01_TC10.md)
-4. [Hướng Dẫn Cài Đặt & Cấu Hình MySQL](./docs/huong-dan/HUONG_DAN_CAI_DAT_MYSQL_VSCODE.md)
-
----
-© 2026 FarmPro AI - Đồ án môn học Ứng Dụng Trí Tuệ Nhân Tạo - Khoa CNTT, Trường ĐH Công Nghệ Thông Tin & Truyền Thông (ICTU).
-
-## 📘 TÀI LIỆU BÁO CÁO KỸ THUẬT KÈM THEO
-1. [Quyển Báo Cáo Kỹ Thuật Đồ Án Môn Học (6 Chương Chuẩn ICTU)](./docs/bao-cao/BAO_CAO_DO_AN_MON_HOC.md)
-2. [Báo Cáo Nghiên Cứu Thực Nghiệm So Sánh Prompt A/B Test (Tiêu Chí 3.2)](./docs/prompt-ab-testing/SO_SANH_PHIEN_BAN_PROMPT.md)
-3. [Báo Cáo Bộ Kiểm Thử Thực Nghiệm TC01 - TC10 (Tiêu Chí 3.1 & 3.3)](./docs/kiem-thu/HUONG_DAN_KIEM_THU_TC01_TC10.md)
-4. [Hướng Dẫn Cài Đặt & Cấu Hình MySQL](./docs/huong-dan/HUONG_DAN_CAI_DAT_MYSQL_VSCODE.md)
+2. [Kịch Bản Demo Theo Dõi Một Đàn Xuyên Suốt 7 Bước (Nhiệm vụ 5)](./docs/huong-dan/KICH_BAN_DEMO_THEO_DOI_MOT_DAN.md)
+3. [Nhật Ký Prompt AI Trong Quy Trình SDLC & Tự Kiểm Chứng](./docs/sdlc-factory/NHAT_KY_PROMPT_SDLC.md)
+4. [Báo Cáo Nghiên Cứu Thực Nghiệm So Sánh Prompt A/B Test (Tiêu Chí 3.2)](./docs/prompt-ab-testing/SO_SANH_PHIEN_BAN_PROMPT.md)
+5. [Báo Cáo Bộ Kiểm Thử Thực Nghiệm TC01 - TC13 (Tiêu Chí 3.1 & 3.3)](./docs/kiem-thu/HUONG_DAN_KIEM_THU_TC01_TC10.md)
+6. [Hướng Dẫn Cài Đặt & Cấu Hình MySQL](./docs/huong-dan/HUONG_DAN_CAI_DAT_MYSQL_VSCODE.md)
 
 ---
 © 2026 FarmPro AI - Đồ án môn học Ứng Dụng Trí Tuệ Nhân Tạo - Khoa CNTT, Trường ĐH Công Nghệ Thông Tin & Truyền Thông (ICTU).
