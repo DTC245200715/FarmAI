@@ -159,3 +159,4 @@ npm test
 
 ---
 *Báo cáo được hoàn thiện và lưu trữ tại thư mục dự án `docs/sdlc-factory/NHAT_KY_PROMPT_SDLC.md` phục vụ công tác thanh tra, bảo vệ đồ án trước Hội đồng chấm thi.*
+

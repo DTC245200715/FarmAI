@@ -148,3 +148,4 @@ flowchart TD
   - Engine AI lâm sàng & disclaimer: [src/server/vetAdvisorEngine.ts](file:///d:/FarmAI-main/FarmAI-main/src/server/vetAdvisorEngine.ts)
   - Backend bảo vệ quyền & kiểm dịch: [server.ts](file:///d:/FarmAI-main/FarmAI-main/server.ts)
   - Cơ sở dữ liệu quan hệ chuẩn 3NF: [database/schema.mysql.sql](file:///d:/FarmAI-main/FarmAI-main/database/schema.mysql.sql)
+
