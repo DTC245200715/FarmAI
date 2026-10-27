@@ -26,3 +26,4 @@ COPY --from=build /app/src/prompts ./src/prompts
 EXPOSE 3000
 
 CMD ["npx", "tsx", "server.ts"]
+

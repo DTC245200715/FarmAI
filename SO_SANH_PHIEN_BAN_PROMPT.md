@@ -1,6 +1,6 @@
 # BÁO CÁO THỰC NGHIỆM: SO SÁNH CÁC PHIÊN BẢN PROMPT (PROMPT ENGINEERING & A/B TESTING)
 **Học phần:** Ứng dụng Trí tuệ Nhân tạo  
-**Giảng viên hướng dẫn:** Nguyễn Tuấn Anh  
+**Giảng viên hướng dẫn:** ThS. Nguyễn Đình Dũng  
 **Trường:** Đại học Công nghệ Thông tin và Truyền thông - Đại học Thái Nguyên (ICTU)  
 **Tiêu chí chấm điểm:** Tiêu chí 3.2 (So sánh các phiên bản prompt, A/B Testing, hiệu quả cải thiện)  
 
@@ -150,3 +150,4 @@ Thử nghiệm thực hiện trên tập mẫu $N = 100$ tình huống bệnh á
 1. **Khẳng định tính ưu việt của Prompt v3:** Kỹ thuật CoT kết hợp Context Engineering đã giải quyết triệt để vấn đề "nói chung chung" và "ảo giác liều lượng" của các mô hình LLM.
 2. **Khả năng tự động hóa chu trình khép kín:** Nhờ đầu ra JSON chuẩn xác từ Prompt v3, người dùng có thể bấm nút **"Áp dụng vào lịch chăm sóc"** hoặc **"Trừ thuốc trong kho"** với 1 cú click chuột, biến AI thành trợ lý đắc lực trong quy trình vận hành trang trại thực tế.
 3. Giao diện trực quan hóa A/B Test được tích hợp sẵn tại tab **"So Sánh Prompt (A/B Test)"** trên thanh Sidebar của ứng dụng FarmPro AI để phục vụ giảng viên kiểm chứng trực tiếp.
+

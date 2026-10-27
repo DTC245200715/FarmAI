@@ -165,3 +165,4 @@ export function getPromptComparisonData(customQuery?: string): PromptComparisonR
     recommendedVersion: 'v3'
   };
 }
+

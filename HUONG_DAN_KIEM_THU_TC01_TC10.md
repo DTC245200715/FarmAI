@@ -1,6 +1,6 @@
 # BÁO CÁO KIỂM THỬ THỰC NGHIỆM HỆ THỐNG (TEST CASES TC01 - TC10)
 **Học phần:** Ứng dụng Trí tuệ Nhân tạo  
-**Giảng viên:** Nguyễn Tuấn Anh  
+**Giảng viên hướng dẫn:** ThS. Nguyễn Đình Dũng  
 **Đơn vị:** Khoa Công nghệ Thông tin - Trường ĐH Công nghệ Thông tin & Truyền thông (ICTU)  
 **Tiêu chí chấm:** Tiêu chí 3.1 (Kiểm thử đúng, sai, biên), Tiêu chí 3.3 (Xử lý lỗi AI & Guardrails)  
 
@@ -43,3 +43,4 @@ Hệ thống FarmPro AI và Multi-Agent System (MAS) được kiểm nghiệm qu
 ### 3.2. Cơ chế Bảo Mật API Key & Input Sanitizer (Tiêu chí 3.4)
 - **Zero-Client Secrets:** Toàn bộ API Key (`GEMINI_API_KEY`, mật khẩu MySQL) được lưu trữ độc quyền trong biến môi trường máy chủ (`.env`). Không một byte khóa bí mật nào được chuyển về trình duyệt của người dùng.
 - **Input Sanitizer:** Mọi dữ liệu người dùng nhập đều được chuẩn hóa, loại bỏ các ký tự nguy hiểm (`<`, `>`, `script`, SQL escape sequences) trước khi đưa vào Agent Pipeline.
+

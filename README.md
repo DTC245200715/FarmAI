@@ -2,7 +2,7 @@
 > **Tên đề tài/Dự án:** Hệ thống quản lý chăn nuôi có tích hợp AI  
 > **Hệ sinh thái:** FarmPro AI & SDLC AI Agent Factory  
 > **Học phần:** Ứng Dụng Trí Tuệ Nhân Tạo – Trường ĐH Công Nghệ Thông Tin & Truyền Thông (ICTU) – Đại Học Thái Nguyên  
-> **Giảng viên hướng dẫn:** ThS. Nguyễn Tuấn Anh | **Lớp:** K23.K1.CNTT K23K
+> **Giảng viên hướng dẫn:** ThS. Nguyễn Đình Dũng | **Lớp:** K23.K1.CNTT K23B
 
 ---
 
