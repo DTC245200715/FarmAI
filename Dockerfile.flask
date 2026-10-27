@@ -1,0 +1,23 @@
+# Dockerfile for Python Flask Multi-Agent System (Bài 6 & 7)
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY multi_agent_product_system/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY multi_agent_product_system/ ./
+
+ENV PORT=5050
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 5050
+
+CMD ["python", "app.py"]
