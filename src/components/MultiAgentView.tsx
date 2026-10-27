@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Cpu,
   Search,
@@ -7,7 +7,6 @@ import {
   RefreshCw,
   ShieldCheck,
   Zap,
-  Play,
   ArrowRight,
   Database,
   Layers,
@@ -25,26 +24,8 @@ import {
 } from 'lucide-react';
 import { useFarm } from '../context/FarmContext';
 
-interface TestAssertion {
-  name: string;
-  passed: boolean;
-  message: string;
-}
-
-interface TestCaseDef {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  sampleQuery: string;
-  expectedBehavior: string;
-  expectedAssertions: string[];
-}
-
 export const MultiAgentView: React.FC = () => {
-  const { addInventoryItem, addBatchTasks, setActiveTab, barns } = useFarm();
-
-  const [subTab, setSubTab] = useState<'consult' | 'test-suite' | 'catalog'>('consult');
+  const { addInventoryItem, addBatchTasks, setActiveTab } = useFarm();
 
   // Interactive consultation state
   const [queryInput, setQueryInput] = useState(
@@ -56,41 +37,6 @@ export const MultiAgentView: React.FC = () => {
   const [copiedJson, setCopiedJson] = useState(false);
   const [addInventorySuccess, setAddInventorySuccess] = useState(false);
   const [addTasksSuccess, setAddTasksSuccess] = useState(false);
-
-  // Test suite state
-  const [testCasesList, setTestCasesList] = useState<TestCaseDef[]>([]);
-  const [isRunningAllTests, setIsRunningAllTests] = useState(false);
-  const [runningSingleTcId, setRunningSingleTcId] = useState<string | null>(null);
-  const [testResultsMap, setTestResultsMap] = useState<Record<string, { passed: boolean; assertions: TestAssertion[]; timeMs: number }>>({});
-  const [selectedTestCaseModal, setSelectedTestCaseModal] = useState<any | null>(null);
-
-  // Catalog state
-  const [catalogItems, setCatalogItems] = useState<any[]>([]);
-  const [catalogSearch, setCatalogSearch] = useState('');
-  const [catalogSpeciesFilter, setCatalogSpeciesFilter] = useState('ALL');
-  const [dbStatus, setDbStatus] = useState<any | null>(null);
-
-  // Load initial test cases & catalog
-  useEffect(() => {
-    fetch('/api/ai/multi-agent/test-cases')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.testCases) setTestCasesList(data.testCases);
-      })
-      .catch((err) => console.error('Error fetching test cases:', err));
-
-    fetch('/api/ai/multi-agent/catalog')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.products) setCatalogItems(data.products);
-      })
-      .catch((err) => console.error('Error fetching catalog:', err));
-
-    fetch('/api/db/status')
-      .then((res) => res.json())
-      .then((data) => setDbStatus(data))
-      .catch(() => {});
-  }, []);
 
   // Run interactive Multi-Agent consultation
   const handleExecuteConsultation = async (customQuery?: string) => {
@@ -114,60 +60,6 @@ export const MultiAgentView: React.FC = () => {
       alert(`Lỗi thực thi: ${err.message}`);
     } finally {
       setIsExecuting(false);
-    }
-  };
-
-  // Run a single test case
-  const handleRunTestCase = async (testCaseId: string) => {
-    setRunningSingleTcId(testCaseId);
-    try {
-      const res = await fetch('/api/ai/multi-agent/run-test-case', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ testCaseId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Lỗi chạy kiểm thử');
-
-      setTestResultsMap((prev) => ({
-        ...prev,
-        [testCaseId]: {
-          passed: data.overallPassed,
-          assertions: data.assertionResults,
-          timeMs: data.trace?.totalExecutionTimeMs || 0,
-        },
-      }));
-      setSelectedTestCaseModal(data);
-    } catch (err: any) {
-      alert(`Lỗi kiểm thử: ${err.message}`);
-    } finally {
-      setRunningSingleTcId(null);
-    }
-  };
-
-  // Run all test cases in batch
-  const handleRunAllTests = async () => {
-    setIsRunningAllTests(true);
-    try {
-      const res = await fetch('/api/ai/multi-agent/run-all-tests', {
-        method: 'POST',
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Lỗi chạy toàn bộ kiểm thử');
-
-      const newMap: Record<string, { passed: boolean; assertions: TestAssertion[]; timeMs: number }> = {};
-      data.results.forEach((r: any) => {
-        newMap[r.definition.id] = {
-          passed: r.overallPassed,
-          assertions: r.assertionResults,
-          timeMs: r.trace?.totalExecutionTimeMs || 0,
-        };
-      });
-      setTestResultsMap(newMap);
-    } catch (err: any) {
-      alert(`Lỗi chạy bộ kiểm thử: ${err.message}`);
-    } finally {
-      setIsRunningAllTests(false);
     }
   };
 
@@ -235,39 +127,6 @@ export const MultiAgentView: React.FC = () => {
     setTimeout(() => setCopiedJson(false), 2000);
   };
 
-  // Quick chips for interactive testing
-  const samplePrompts = [
-    {
-      label: 'TC01: Cám vỗ béo bò CP',
-      query: 'Tôi cần cám vỗ béo tăng trọng nhanh cho đàn bò thịt của hãng CP Việt Nam, ngân sách khoảng 400.000 đ',
-    },
-    {
-      label: 'TC02: Heo sốt thở dốc Marphavet',
-      query: 'Heo thịt 95kg bị sốt đỏ 40 độ, thở dốc và ho giật bụng, cần kháng sinh đặc trị của Marphavet',
-    },
-    {
-      label: 'TC03: Hãng lạ (SuperVetPro999)',
-      query: 'Cần mua thuốc tẩy giun cho đàn bò của hãng SuperVetPro999 giá dưới 500k',
-    },
-    {
-      label: 'TC04: Ngân sách thấp (15k)',
-      query: 'Cần mua kháng sinh tiêm cho heo sốt với ngân sách chỉ có 15.000 đ',
-    },
-    {
-      label: 'TC07: Tìm kiếm ngữ nghĩa triệu chứng',
-      query: 'Con vật bị nổi ban đỏ khắp tai và bẹn, thân nhiệt nóng như hòn than, nhịp thở dồn dập',
-    },
-    {
-      label: "TC08: SQL Injection (' OR 1=1 --)",
-      query: "Bò bị bệnh ' OR '1'='1' -- DROP TABLE farm_products; SELECT * FROM users",
-    },
-  ];
-
-  // Calculate test suite statistics
-  const testIds = testCasesList.map((t) => t.id);
-  const testedCount = testIds.filter((id) => testResultsMap[id] !== undefined).length;
-  const passedCount = testIds.filter((id) => testResultsMap[id]?.passed).length;
-
   return (
     <div className="space-y-6">
       {/* Top Banner & Overview */}
@@ -304,53 +163,11 @@ export const MultiAgentView: React.FC = () => {
               <div className="text-[10px] text-slate-400">Tham số hóa an toàn</div>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 text-center col-span-2 sm:col-span-1">
-              <div className="text-xs text-slate-300">Bộ kịch bản kiểm thử</div>
-              <div className="text-xl font-bold text-amber-300">TC01 - TC10</div>
-              <div className="text-[10px] text-slate-400">{testedCount > 0 ? `${passedCount}/${testCasesList.length} Đạt` : '10 bài kiểm tra'}</div>
+              <div className="text-xs text-slate-300">Chuẩn hóa dữ liệu</div>
+              <div className="text-xl font-bold text-amber-300">VietGAHP</div>
+              <div className="text-[10px] text-slate-400">Tự phục hồi đa tầng</div>
             </div>
           </div>
-        </div>
-
-        {/* Sub-tab Navigation */}
-        <div className="mt-6 pt-4 border-t border-white/15 flex flex-wrap gap-2">
-          <button
-            onClick={() => setSubTab('consult')}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${
-              subTab === 'consult'
-                ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
-                : 'bg-white/10 text-slate-200 hover:bg-white/20'
-            }`}
-          >
-            <Zap className="w-4 h-4" />
-            Tư vấn Tương tác Trực tiếp
-          </button>
-          <button
-            onClick={() => setSubTab('test-suite')}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${
-              subTab === 'test-suite'
-                ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
-                : 'bg-white/10 text-slate-200 hover:bg-white/20'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            Bộ Kiểm Thử Chuẩn (TC01 - TC10)
-            {testedCount > 0 && (
-              <span className="ml-1 px-2 py-0.5 text-xs bg-emerald-400 text-emerald-950 font-bold rounded-full">
-                {passedCount}/{testCasesList.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setSubTab('catalog')}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${
-              subTab === 'catalog'
-                ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
-                : 'bg-white/10 text-slate-200 hover:bg-white/20'
-            }`}
-          >
-            <Database className="w-4 h-4" />
-            CSDL Thuốc & Vật Tư ({catalogItems.length} sản phẩm)
-          </button>
         </div>
       </div>
 
@@ -389,70 +206,48 @@ export const MultiAgentView: React.FC = () => {
         </div>
       )}
 
-      {/* ==================================================== */}
-      {/* 1. CONSULTATION TAB                                  */}
-      {/* ==================================================== */}
-      {subTab === 'consult' && (
-        <div className="space-y-6">
-          {/* Query Input Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-600" />
-                Nhập yêu cầu tư vấn hoặc truy vấn kiểm thử:
-              </label>
-              <span className="text-xs text-slate-500 hidden sm:inline">
-                Hỗ trợ ngôn ngữ tự nhiên, ngân sách, hãng sản xuất, triệu chứng lâm sàng
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="text"
-                value={queryInput}
-                onChange={(e) => setQueryInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleExecuteConsultation()}
-                placeholder="VD: Cần kháng sinh tiêm cho heo sốt thở giật bụng của Marphavet, ngân sách 200k..."
-                className="flex-1 px-4 py-3 rounded-xl border border-slate-300 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
-              />
-              <button
-                onClick={() => handleExecuteConsultation()}
-                disabled={isExecuting || !queryInput.trim()}
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition shrink-0"
-              >
-                {isExecuting ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Đang chạy 4 Agents...
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4" />
-                    Thực Thi Đa Tác Tử
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Quick Scenario Chips */}
-            <div>
-              <div className="text-xs font-medium text-slate-500 mb-2">Thử nhanh các tình huống thực tế & kiểm thử:</div>
-              <div className="flex flex-wrap gap-2">
-                {samplePrompts.map((p, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setQueryInput(p.query);
-                      handleExecuteConsultation(p.query);
-                    }}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-medium border border-slate-200 transition"
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+      {/* CONSULTATION VIEW */}
+      <div className="space-y-6">
+        {/* Query Input Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-emerald-600" />
+              Nhập yêu cầu tư vấn dinh dưỡng & thú y:
+            </label>
+            <span className="text-xs text-slate-500 hidden sm:inline">
+              Hỗ trợ ngôn ngữ tự nhiên, ngân sách, hãng sản xuất, triệu chứng lâm sàng
+            </span>
           </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={queryInput}
+              onChange={(e) => setQueryInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleExecuteConsultation()}
+              placeholder="VD: Cần kháng sinh tiêm cho heo sốt thở giật bụng của Marphavet, ngân sách 200k..."
+              className="flex-1 px-4 py-3 rounded-xl border border-slate-300 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+            />
+            <button
+              onClick={() => handleExecuteConsultation()}
+              disabled={isExecuting || !queryInput.trim()}
+              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition shrink-0"
+            >
+              {isExecuting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Đang chạy 4 Agents...
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4" />
+                  Thực Thi Đa Tác Tử
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
           {/* Execution Pipeline Visualization */}
           {executionTrace && (
@@ -489,7 +284,7 @@ export const MultiAgentView: React.FC = () => {
 
               {/* 4 Agent Stepper Cards */}
               <div className="space-y-3">
-                {/* ---------------- AGENT 1: REQUIREMENT AGENT (TC09) ---------------- */}
+                {/* ---------------- AGENT 1: REQUIREMENT AGENT ---------------- */}
                 <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                   <div
                     onClick={() => setActiveStageAccordion(activeStageAccordion === 1 ? null : 1)}
@@ -503,7 +298,7 @@ export const MultiAgentView: React.FC = () => {
                         <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
                           🎯 Agent 1: Requirement Agent (Trích Xuất Nhu Cầu JSON)
                           <span className="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md font-medium border border-emerald-200">
-                            TC09 Compliant
+                            Trích xuất chuẩn hóa JSON
                           </span>
                         </div>
                         <div className="text-xs text-slate-500">
@@ -587,7 +382,7 @@ export const MultiAgentView: React.FC = () => {
                   )}
                 </div>
 
-                {/* ---------------- AGENT 2: SEARCH & RETRIEVAL AGENT (TC07, TC08, TC03, TC04) ---------------- */}
+                {/* ---------------- AGENT 2: SEARCH & RETRIEVAL AGENT ---------------- */}
                 <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                   <div
                     onClick={() => setActiveStageAccordion(activeStageAccordion === 2 ? null : 2)}
@@ -601,7 +396,7 @@ export const MultiAgentView: React.FC = () => {
                         <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
                           🔍 Agent 2: Search & Retrieval Agent (Safe SQL & Vector Semantic Search)
                           <span className="text-[11px] px-2 py-0.5 bg-cyan-50 text-cyan-700 rounded-md font-medium border border-cyan-200">
-                            TC03, TC04, TC07, TC08
+                            Truy vấn an toàn & Ngữ nghĩa
                           </span>
                         </div>
                         <div className="text-xs text-slate-500 flex flex-wrap items-center gap-2">
@@ -630,7 +425,7 @@ export const MultiAgentView: React.FC = () => {
                     <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-4">
                       {/* Safety Badges: SQL Injection & Brand / Budget Handling */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {/* TC08 Badge */}
+                        {/* SQL Injection Protection Badge */}
                         <div
                           className={`p-3 rounded-lg border text-xs ${
                             executionTrace.searchAgent.data.sqlInjectionDetected
@@ -640,16 +435,16 @@ export const MultiAgentView: React.FC = () => {
                         >
                           <div className="font-semibold flex items-center gap-1.5">
                             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                            Kiểm thử SQL Injection (TC08)
+                            Bảo vệ truy vấn SQL
                           </div>
                           <div className="mt-1 text-[11px]">
                             {executionTrace.searchAgent.data.sqlInjectionDetected
-                              ? '⚠️ Phát hiện mẫu tấn công SQL Injection! Đã kích hoạt cơ chế khử khuẩn tham số hóa an toàn.'
+                              ? '⚠️ Phát hiện mẫu ký tự bất thường! Đã kích hoạt cơ chế khử khuẩn tham số hóa an toàn.'
                               : '✅ Truy vấn tham số hóa hoàn toàn an toàn (:species, :category). Ngăn chặn 100% rò rỉ dữ liệu.'}
                           </div>
                         </div>
 
-                        {/* TC03 Badge */}
+                        {/* Brand Handling Badge */}
                         <div
                           className={`p-3 rounded-lg border text-xs ${
                             !executionTrace.searchAgent.data.brandStatus.isBrandFound
@@ -659,7 +454,7 @@ export const MultiAgentView: React.FC = () => {
                         >
                           <div className="font-semibold flex items-center gap-1.5">
                             <Info className="w-4 h-4 text-blue-600" />
-                            Xác thực Thương hiệu (TC03)
+                            Xác thực Thương hiệu & Hãng
                           </div>
                           <div className="mt-1 text-[11px]">
                             {executionTrace.searchAgent.data.brandStatus.isBrandFound
@@ -668,7 +463,7 @@ export const MultiAgentView: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* TC04 Badge */}
+                        {/* Budget Handling Badge */}
                         <div
                           className={`p-3 rounded-lg border text-xs ${
                             !executionTrace.searchAgent.data.budgetStatus.isBudgetSufficient
@@ -678,7 +473,7 @@ export const MultiAgentView: React.FC = () => {
                         >
                           <div className="font-semibold flex items-center gap-1.5">
                             <DollarSign className="w-4 h-4 text-emerald-600" />
-                            Ràng buộc Ngân sách (TC04)
+                            Tối ưu hóa Ràng buộc Ngân sách
                           </div>
                           <div className="mt-1 text-[11px]">
                             {executionTrace.searchAgent.data.budgetStatus.isBudgetSufficient
@@ -698,10 +493,10 @@ export const MultiAgentView: React.FC = () => {
                         </pre>
                       </div>
 
-                      {/* TC07: Vector Semantic Search Ranking Table */}
+                      {/* Vector Semantic Search Ranking Table */}
                       <div>
                         <div className="text-[11px] font-semibold text-slate-500 mb-1">
-                          Bảng xếp hạng Vector Semantic Search (TC07 - Độ tương đồng ngữ nghĩa):
+                          Bảng xếp hạng Vector Semantic Search (Độ tương đồng ngữ nghĩa):
                         </div>
                         <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
                           <table className="w-full text-xs">
@@ -748,7 +543,7 @@ export const MultiAgentView: React.FC = () => {
                   )}
                 </div>
 
-                {/* ---------------- AGENT 3: CRITIC & EVALUATION AGENT (TC05, TC06) ---------------- */}
+                {/* ---------------- AGENT 3: CRITIC & EVALUATION AGENT ---------------- */}
                 <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                   <div
                     onClick={() => setActiveStageAccordion(activeStageAccordion === 3 ? null : 3)}
@@ -762,7 +557,7 @@ export const MultiAgentView: React.FC = () => {
                         <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
                           ⚖️ Agent 3: Critic & Evaluation Agent (Kiểm Định & Cơ Chế Retry)
                           <span className="text-[11px] px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md font-medium border border-amber-200">
-                            TC05, TC06 Compliant
+                            Tự động Thẩm định & Phục hồi
                           </span>
                         </div>
                         <div className="text-xs text-slate-500 flex items-center gap-2">
@@ -799,12 +594,12 @@ export const MultiAgentView: React.FC = () => {
 
                   {activeStageAccordion === 3 && (
                     <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-3">
-                      {/* Retry notes if triggered (TC05, TC06) */}
+                      {/* Retry notes if triggered */}
                       {executionTrace.criticAgent.data.retryCount > 0 && (
                         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-1">
                           <div className="font-bold flex items-center gap-1.5 text-amber-800">
                             <RefreshCw className="w-4 h-4 animate-spin text-amber-600" />
-                            Đã kích hoạt cơ chế Tự phục hồi (Retry Mechanism - TC05, TC06):
+                            Đã kích hoạt cơ chế Tự phục hồi (Self-Healing Retry):
                           </div>
                           <ul className="list-disc pl-5 space-y-0.5 text-[11px]">
                             {executionTrace.criticAgent.data.relaxationApplied.map((note: string, i: number) => (
@@ -846,7 +641,7 @@ export const MultiAgentView: React.FC = () => {
                   )}
                 </div>
 
-                {/* ---------------- AGENT 4: DECISION & ADVISOR AGENT (TC01, TC02) ---------------- */}
+                {/* ---------------- AGENT 4: DECISION & ADVISOR AGENT ---------------- */}
                 <div className="bg-white rounded-xl border border-emerald-300 shadow-md overflow-hidden">
                   <div
                     onClick={() => setActiveStageAccordion(activeStageAccordion === 4 ? null : 4)}
@@ -860,7 +655,7 @@ export const MultiAgentView: React.FC = () => {
                         <div className="text-sm font-bold text-emerald-950 flex items-center gap-2">
                           🩺 Agent 4: Decision & Advisor Agent (Tổng Hợp Quyết Định & Phác Đồ)
                           <span className="text-[11px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-medium border border-emerald-300">
-                            TC01, TC02, TC10
+                            Phác đồ chuẩn hóa VietGAHP
                           </span>
                         </div>
                         <div className="text-xs text-emerald-800">
@@ -988,369 +783,6 @@ export const MultiAgentView: React.FC = () => {
             </div>
           )}
         </div>
-      )}
-
-      {/* ==================================================== */}
-      {/* 2. AUTOMATED TEST SUITE (TC01 - TC10)                */}
-      {/* ==================================================== */}
-      {subTab === 'test-suite' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                  Bộ Kiểm Thử Chuẩn Toàn Diện (TC01 - TC10)
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Xác minh đầy đủ các ca kiểm thử theo tài liệu: Tư vấn hợp lệ, xử lý hãng không tồn tại, ngân sách thấp,
-                  cơ chế tự phục hồi Retry, truy vấn ngữ nghĩa Vector, an toàn SQL Injection và trích xuất JSON.
-                </p>
-              </div>
-
-              <button
-                onClick={handleRunAllTests}
-                disabled={isRunningAllTests}
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-2 transition shrink-0"
-              >
-                {isRunningAllTests ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Đang chạy 10 kịch bản kiểm thử...
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4 fill-white" />
-                    Chạy Toàn Bộ 10 Kịch Bản Kiểm Thử
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Test Suite Summary Banner */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
-                <div className="text-xs text-slate-400">Tổng số kịch bản</div>
-                <div className="text-xl font-bold text-slate-800">{testCasesList.length} Kịch bản</div>
-              </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
-                <div className="text-xs text-slate-400">Đã kiểm thử</div>
-                <div className="text-xl font-bold text-blue-700">{testedCount} / {testCasesList.length}</div>
-              </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
-                <div className="text-xs text-slate-400">Đạt chuẩn</div>
-                <div className="text-xl font-bold text-emerald-600">{passedCount} Kịch bản</div>
-              </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
-                <div className="text-xs text-slate-400">Tỷ lệ thành công</div>
-                <div className="text-xl font-bold text-emerald-700">
-                  {testedCount > 0 ? `${Math.round((passedCount / testedCount) * 100)}%` : '0%'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Test Cases Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {testCasesList.map((tc) => {
-              const res = testResultsMap[tc.id];
-              const isRunning = runningSingleTcId === tc.id;
-
-              return (
-                <div
-                  key={tc.id}
-                  className={`bg-white rounded-2xl border p-5 space-y-3 transition shadow-sm ${
-                    res
-                      ? res.passed
-                        ? 'border-emerald-300 bg-emerald-50/20'
-                        : 'border-red-300 bg-red-50/20'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 bg-slate-900 text-white font-mono text-xs font-bold rounded-md">
-                          {tc.id}
-                        </span>
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200">
-                          {tc.category}
-                        </span>
-                      </div>
-                      <h4 className="text-sm font-bold text-slate-900 mt-1">{tc.title}</h4>
-                    </div>
-
-                    <div className="shrink-0">
-                      {res ? (
-                        res.passed ? (
-                          <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Đạt Chuẩn
-                          </span>
-                        ) : (
-                          <span className="px-2.5 py-1 bg-red-100 text-red-800 text-xs font-bold rounded-full flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5 text-red-600" /> Không Đạt
-                          </span>
-                        )
-                      ) : (
-                        <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs rounded-full">
-                          Chưa kiểm thử
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-600 leading-relaxed">{tc.description}</p>
-
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs space-y-1">
-                    <div className="font-semibold text-slate-700">Câu truy vấn thử nghiệm mẫu:</div>
-                    <div className="text-slate-600 font-mono text-[11px] bg-white p-2 rounded border border-slate-200">
-                      "{tc.sampleQuery}"
-                    </div>
-                  </div>
-
-                  {res && (
-                    <div className="space-y-1 pt-1 border-t border-slate-100 text-xs">
-                      <div className="font-semibold text-slate-700 flex items-center justify-between">
-                        <span>Tiêu chí kiểm định đạt chuẩn:</span>
-                        <span className="text-slate-400 font-mono text-[11px]">{res.timeMs}ms</span>
-                      </div>
-                      <div className="space-y-1">
-                        {res.assertions.map((a, i) => (
-                          <div key={i} className="flex items-center gap-1.5 text-[11px] text-slate-600">
-                            {a.passed ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            ) : (
-                              <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
-                            )}
-                            <span className="font-medium text-slate-700">{a.name}:</span>
-                            <span className="truncate text-slate-500">{a.message}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="pt-2 flex items-center justify-between">
-                    <button
-                      onClick={() => {
-                        setQueryInput(tc.sampleQuery);
-                        setSubTab('consult');
-                        handleExecuteConsultation(tc.sampleQuery);
-                      }}
-                      className="text-xs font-semibold text-slate-600 hover:text-emerald-700 flex items-center gap-1 transition"
-                    >
-                      Mở trên giao diện tư vấn <ArrowRight className="w-3 h-3" />
-                    </button>
-
-                    <button
-                      onClick={() => handleRunTestCase(tc.id)}
-                      disabled={isRunning}
-                      className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition"
-                    >
-                      {isRunning ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-white" />}
-                      Chạy Test {tc.id}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ==================================================== */}
-      {/* 3. CATALOG & VECTOR INDEX TAB                        */}
-      {/* ==================================================== */}
-      {subTab === 'catalog' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <Database className="w-5 h-5 text-emerald-600" />
-                    Cơ Sở Dữ Liệu Dược Phẩm & Vật Tư Trang Trại
-                  </h3>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border flex items-center gap-1 ${
-                      dbStatus?.connected
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                        : 'bg-blue-50 text-blue-800 border-blue-200'
-                    }`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${dbStatus?.connected ? 'bg-emerald-500' : 'bg-blue-500'}`} />
-                    <span>{dbStatus?.connected ? 'MySQL Live (farmpro_db)' : 'MySQL Ready (schema.mysql.sql)'}</span>
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Dữ liệu chuẩn hóa gồm 12+ dòng sản phẩm với chỉ định thú y, hoạt chất, thời gian ngưng thuốc và từ khóa
-                  phục vụ tìm kiếm ngữ nghĩa (Vector Embedding). Hỗ trợ kết nối trực tiếp MySQL vật lý hoặc In-Memory Fallback.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <input
-                  type="text"
-                  value={catalogSearch}
-                  onChange={(e) => setCatalogSearch(e.target.value)}
-                  placeholder="Tìm theo tên, hoạt chất, hãng..."
-                  className="px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full sm:w-56"
-                />
-                <select
-                  value={catalogSpeciesFilter}
-                  onChange={(e) => setCatalogSpeciesFilter(e.target.value)}
-                  className="px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="ALL">Tất cả loài</option>
-                  <option value="Bò">Bò</option>
-                  <option value="Heo">Heo</option>
-                  <option value="Gà">Gà</option>
-                  <option value="Dê">Dê</option>
-                  <option value="Chó">Chó</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Catalog Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-              {catalogItems
-                .filter((p) => {
-                  const matchSearch =
-                    p.name.toLowerCase().includes(catalogSearch.toLowerCase()) ||
-                    p.brand.toLowerCase().includes(catalogSearch.toLowerCase()) ||
-                    p.activeIngredients.toLowerCase().includes(catalogSearch.toLowerCase());
-                  const matchSpecies =
-                    catalogSpeciesFilter === 'ALL' ||
-                    p.targetSpecies.some((s: string) => s.toLowerCase() === catalogSpeciesFilter.toLowerCase());
-                  return matchSearch && matchSpecies;
-                })
-                .map((prod) => (
-                  <div
-                    key={prod.id}
-                    className="p-4 rounded-xl border border-slate-200 bg-white hover:border-emerald-300 hover:shadow-md transition space-y-2.5 flex flex-col justify-between"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                          {prod.brand}
-                        </span>
-                        <span className="text-[10px] text-slate-500 font-mono">Tồn kho: {prod.inStock}</span>
-                      </div>
-
-                      <h4 className="text-sm font-bold text-slate-900 leading-snug">{prod.name}</h4>
-
-                      <div className="text-xs text-slate-600 line-clamp-2">
-                        <strong>Chỉ định:</strong> {prod.indications}
-                      </div>
-
-                      <div className="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                        <strong>Hoạt chất:</strong> {prod.activeIngredients}
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-bold text-emerald-700 font-mono">
-                          {prod.priceVnd.toLocaleString('vi-VN')} đ
-                        </div>
-                        <div className="text-[10px] text-slate-400">{prod.unit}</div>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          setQueryInput(`Tư vấn cho tôi cách dùng sản phẩm ${prod.name} của hãng ${prod.brand}`);
-                          setSubTab('consult');
-                          handleExecuteConsultation(`Tư vấn cho tôi cách dùng sản phẩm ${prod.name} của hãng ${prod.brand}`);
-                        }}
-                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-xs font-semibold rounded-lg transition"
-                      >
-                        Hỏi AI về thuốc này
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Test Case Detail Modal */}
-      {selectedTestCaseModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 space-y-4 animate-scale-in">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <span className="font-mono text-xs font-bold px-2 py-0.5 bg-slate-900 text-white rounded">
-                  {selectedTestCaseModal.definition.id}
-                </span>
-                <h3 className="text-base font-bold text-slate-900 mt-1">
-                  {selectedTestCaseModal.definition.title}
-                </h3>
-              </div>
-              <button
-                onClick={() => setSelectedTestCaseModal(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-sm font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <div className="font-semibold text-slate-700">Mô tả mục tiêu kiểm thử:</div>
-                <div className="text-slate-600 mt-0.5">{selectedTestCaseModal.definition.description}</div>
-              </div>
-
-              <div>
-                <div className="font-semibold text-slate-700">Câu truy vấn:</div>
-                <div className="p-2 bg-slate-50 border rounded-lg font-mono text-[11px] text-slate-800 mt-0.5">
-                  "{selectedTestCaseModal.definition.sampleQuery}"
-                </div>
-              </div>
-
-              <div>
-                <div className="font-semibold text-slate-700">Kết quả kiểm tra (Assertions):</div>
-                <div className="space-y-1.5 mt-1">
-                  {selectedTestCaseModal.assertionResults.map((a: any, i: number) => (
-                    <div
-                      key={i}
-                      className={`p-2.5 rounded-lg border flex items-center justify-between ${
-                        a.passed ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-red-50 border-red-200 text-red-900'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {a.passed ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        ) : (
-                          <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
-                        )}
-                        <span className="font-semibold">{a.name}</span>
-                      </div>
-                      <span className="text-[11px] font-mono text-slate-600">{a.message}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="font-semibold text-slate-700">Trích xuất JSON (Requirement Agent):</div>
-                <pre className="p-3 bg-slate-900 text-emerald-400 font-mono text-[11px] rounded-lg overflow-x-auto mt-1">
-                  {JSON.stringify(selectedTestCaseModal.trace?.requirementAgent?.data, null, 2)}
-                </pre>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t flex justify-end">
-              <button
-                onClick={() => setSelectedTestCaseModal(null)}
-                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800 transition"
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      </div>
   );
 };
