@@ -110,7 +110,7 @@ export const SdlcFactoryView: React.FC = () => {
         <div className="relative z-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">
             <Factory className="w-3.5 h-3.5" />
-            Tiêu Chí Chấm 2 (4,0 Điểm): SDLC AI Agent Factory
+            Hệ Thống Tự Động Hóa Đa Tác Tử (SDLC AI Factory)
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Nhà Máy Phát Triển Phần Mềm Đa Tác Tử (SDLC AI Factory)

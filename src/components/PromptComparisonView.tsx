@@ -77,7 +77,7 @@ export const PromptComparisonView: React.FC = () => {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-400/30">
               <Sparkles className="w-3.5 h-3.5" />
-              Tiêu Chí Chấm 3.2: Prompt Engineering & A/B Testing
+              Tối Ưu Hóa & Nghiên Cứu Thực Nghiệm Prompt A/B
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
               So Sánh Thực Nghiệm Các Phiên Bản Prompt
@@ -239,7 +239,7 @@ export const PromptComparisonView: React.FC = () => {
                       <FileText className="w-4 h-4 text-emerald-600" />
                       Nội dung System Instruction
                     </h4>
-                    <pre className="text-[11px] bg-slate-900 text-slate-100 p-4 rounded-2xl font-mono whitespace-pre-wrap max-h-60 overflow-y-auto leading-relaxed border border-slate-800">
+                    <pre className="text-[11px] bg-slate-900 text-slate-100 p-4 rounded-2xl font-mono whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed border border-slate-800">
                       {v.systemPrompt}
                     </pre>
                   </div>
@@ -288,7 +288,7 @@ export const PromptComparisonView: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="bg-slate-950 text-slate-200 rounded-2xl p-4 font-mono text-xs overflow-x-auto max-h-[460px] overflow-y-auto leading-relaxed border border-slate-800">
+                  <div className="bg-slate-950 text-slate-200 rounded-2xl p-4 font-mono text-xs overflow-x-auto max-h-[380px] overflow-y-auto leading-relaxed border border-slate-800">
                     <pre className="whitespace-pre-wrap">{v.rawOutput}</pre>
                   </div>
                 </div>
