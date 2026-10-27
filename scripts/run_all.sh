@@ -15,3 +15,4 @@ fi
 
 echo "Hệ thống đang chạy tại http://localhost:3000"
 wait $NODE_PID
+

@@ -37,3 +37,4 @@ export const SDLC_CONTEXT_ENGINEERING: SdlcContextDefinition = {
 - Multi-Agent Python Service: Python 3.11, Flask, Pydantic, ChromaDB Vector Store.
 - Cơ sở dữ liệu: MySQL 8.0 Relational DB + In-Memory Fallback State Store.`
 };
+

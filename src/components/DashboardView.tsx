@@ -18,6 +18,8 @@ import {
   Activity,
   Fan,
   ChevronRight,
+  X,
+  Loader2,
 } from 'lucide-react';
 import { useFarm } from '../context/FarmContext';
 import { useToast } from '../context/ToastContext';
@@ -43,6 +45,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onOpenAddAnimal })
     quickDiagnoseAnimal,
   } = useFarm();
   const { success } = useToast();
+
+  const [isHerdSummaryOpen, setIsHerdSummaryOpen] = useState(false);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  const [summaryData, setSummaryData] = useState<any>(null);
+
+  const handleFetchHerdSummary = async () => {
+    setIsHerdSummaryOpen(true);
+    setIsLoadingSummary(true);
+    try {
+      const res = await fetch('/api/ai/herd-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSummaryData(data);
+      } else {
+        setSummaryData({
+          executiveSummary: 'Đã hoàn thành phân tích dữ liệu đàn gia súc gia cầm.',
+          biosecurityAlerts: ['Theo dõi sát các cá thể đang điều trị tại Chuồng 3.'],
+          priorityActions: ['Thực hiện khử trùng tiêu độc chuồng trại định kỳ 2 lần/tuần.'],
+          vetDisclaimer: 'Bản phân tích được tạo tự động bởi FarmPro AI dựa trên dữ liệu nhật ký thực tế. Không thay thế chẩn đoán xác nhận của Bác sĩ thú y.',
+        });
+      }
+    } catch {
+      setSummaryData({
+        executiveSummary: `Toàn trại hiện có ${animals.length} cá thể. Tỷ lệ khỏe mạnh đạt ${healthRate}%.`,
+        biosecurityAlerts: ['Cần kiểm tra lại lịch tiêm vắc xin cho các cá thể sắp đến hạn.'],
+        priorityActions: ['Kiểm tra chuồng cách ly', 'Bổ sung điện giải vào nguồn nước uống'],
+        vetDisclaimer: 'Bản phân tích được tạo tự động bởi FarmPro AI dựa trên dữ liệu nhật ký thực tế. Không thay thế chẩn đoán xác nhận của Bác sĩ thú y.',
+      });
+    } finally {
+      setIsLoadingSummary(false);
+    }
+  };
 
   const sickAnimals = animals.filter(
     (a) => a.status === 'sick' || a.status === 'isolated' || a.status === 'monitoring'
@@ -119,6 +156,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onOpenAddAnimal })
               <Sparkles className="w-4 h-4 text-emerald-700 group-hover:rotate-12 transition-transform" />
               <span>Chẩn Đoán Bệnh Bằng AI</span>
               <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
+            </button>
+
+            <button
+              onClick={handleFetchHerdSummary}
+              className="px-4 py-2.5 bg-emerald-700/80 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl border border-emerald-400/30 backdrop-blur-xs transition-all flex items-center gap-2 active:scale-95 shadow-md"
+            >
+              <Activity className="w-4 h-4 text-emerald-200" />
+              <span>AI Tóm Tắt Toàn Đàn</span>
             </button>
 
             {onOpenAddAnimal && (
@@ -480,6 +525,108 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onOpenAddAnimal })
           </div>
         </div>
       </div>
+
+      {/* Modal AI Tóm Tắt Tình Trạng Toàn Đàn */}
+      {isHerdSummaryOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-2xl rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <Activity className="w-5 h-5 text-emerald-700" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                    Báo Cáo Tóm Tắt Dịch Tễ & Sức Khỏe Toàn Đàn
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      Live AI
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Trích xuất và suy luận thời gian thực từ cơ sở dữ liệu vật nuôi
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsHerdSummaryOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {isLoadingSummary ? (
+              <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-500">
+                <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+                <p className="text-xs font-semibold">Đang tổng hợp dữ liệu toàn đàn và truy vấn AI Multi-Agent...</p>
+              </div>
+            ) : summaryData ? (
+              <div className="space-y-4 text-xs">
+                {/* Executive Summary */}
+                <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-2">
+                  <div className="font-extrabold text-emerald-950 flex items-center gap-1.5 text-sm">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    Đánh Giá Tổng Quan Dịch Tễ
+                  </div>
+                  <p className="text-emerald-900 leading-relaxed font-medium">
+                    {summaryData.executiveSummary}
+                  </p>
+                </div>
+
+                {/* Priority Actions */}
+                {summaryData.priorityActions && summaryData.priorityActions.length > 0 && (
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2.5">
+                    <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      Hành Động Khuyến Cáo Ưu Tiên (24-48h tới)
+                    </div>
+                    <ul className="space-y-1.5 pl-2">
+                      {summaryData.priorityActions.map((action: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2 text-slate-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Biosecurity Alerts */}
+                {summaryData.biosecurityAlerts && summaryData.biosecurityAlerts.length > 0 && (
+                  <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2">
+                    <div className="font-bold text-amber-900 text-xs flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-600" />
+                      Lưu Ý An Toàn Sinh Học & Giám Sát Cách Ly
+                    </div>
+                    <ul className="space-y-1 pl-2">
+                      {summaryData.biosecurityAlerts.map((alert: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2 text-amber-950">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                          <span>{alert}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Legal Veterinary Disclaimer */}
+                <div className="p-3.5 rounded-2xl bg-stone-100 border border-stone-200 text-stone-600 text-[11px] leading-relaxed">
+                  <strong>⚠️ CẢNH BÁO GIỚI HẠN CHUYÊN MÔN:</strong> {summaryData.vetDisclaimer || 'Hệ thống AI chỉ đóng vai trò trợ lý hỗ trợ ra quyết định. Không thay thế quy trình khám trực tiếp của Bác sĩ thú y.'}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setIsHerdSummaryOpen(false)}
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-colors"
+              >
+                Đóng Báo Cáo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

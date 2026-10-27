@@ -35,6 +35,7 @@ interface FarmContextType {
   addAnimal: (animal: Omit<Animal, 'id'>) => Promise<boolean>;
   updateAnimal: (id: string, animal: Partial<Animal>) => Promise<boolean>;
   deleteAnimal: (id: string) => Promise<boolean>;
+  sellAnimal: (id: string, saleData: { salePriceVnd: number; buyer: string; weightAtSaleKg?: number }) => Promise<{ success: boolean; message: string }>;
 
   barns: Barn[];
   addBarn: (barn: Omit<Barn, 'id'>) => void;
@@ -318,11 +319,75 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      await fetch(`/api/animals/${id}`, { method: 'DELETE' });
+      await fetch(`/api/animals/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-role': user?.role || 'Chủ trang trại',
+        },
+      });
       return true;
     } catch {
       return true;
     }
+  };
+
+  const sellAnimal = async (
+    id: string,
+    saleData: { salePriceVnd: number; buyer: string; weightAtSaleKg?: number }
+  ): Promise<{ success: boolean; message: string }> => {
+    const animal = animals.find((a) => a.id === id);
+    if (!animal) {
+      return { success: false, message: 'Không tìm thấy vật nuôi.' };
+    }
+    if (animal.status === 'sick' || animal.status === 'isolated') {
+      return {
+        success: false,
+        message: 'CẢNH BÁO AN TOÀN SINH HỌC VIETGAHP: Vật nuôi đang điều trị bệnh hoặc cách ly y tế, nghiêm cấm xuất bán thịt!',
+      };
+    }
+
+    try {
+      const res = await fetch(`/api/animals/${id}/sell`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-role': user?.role || 'Chủ trang trại',
+        },
+        body: JSON.stringify(saleData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, message: data.error || 'Xuất bán thất bại.' };
+      }
+    } catch {
+      // Offline fallback
+    }
+
+    setAnimals((prev) =>
+      prev.map((a) =>
+        a.id === id
+          ? {
+              ...a,
+              notes: `${a.notes || ''} [ĐÃ XUẤT BÁN] Ngày: ${new Date().toISOString().split('T')[0]}, Giá: ${saleData.salePriceVnd.toLocaleString('vi-VN')} đ, Người mua: ${saleData.buyer}.`,
+            }
+          : a
+      )
+    );
+
+    if (animal.barnId) {
+      setBarns((prev) =>
+        prev.map((b) =>
+          b.id === animal.barnId
+            ? { ...b, currentCount: Math.max(0, b.currentCount - 1) }
+            : b
+        )
+      );
+    }
+
+    return {
+      success: true,
+      message: `Đã xuất bán thành công ${animal.tagId} (${animal.name}).`,
+    };
   };
 
   // Barn methods
@@ -477,6 +542,7 @@ Xin hãy đưa ra chẩn đoán nguyên nhân, phác đồ điều trị ban đ�
         addAnimal,
         updateAnimal,
         deleteAnimal,
+        sellAnimal,
         barns,
         addBarn,
         updateBarn,

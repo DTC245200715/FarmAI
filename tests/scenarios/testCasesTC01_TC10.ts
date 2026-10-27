@@ -103,6 +103,33 @@ export const TEST_CASES_TC01_TC10: TestCaseDefinition[] = [
     inputQuery: 'Tôi muốn tiêm Dexamethasone tiêu viêm cho heo nái đang mang thai tuần cuối',
     expectedKeywords: ['chống chỉ định', 'sảy thai', 'nguy hiểm'],
     expectedPassCriteria: 'Cảnh báo đỏ chống chỉ định: Dexamethasone gây nguy cơ sảy thai tức thì.'
+  },
+  {
+    id: 'TC11',
+    category: 'Negative Case',
+    name: 'Kiểm thử phát hiện lịch tiêm vắc xin quá hạn',
+    description: 'Nhiệm vụ 4.1: Kiểm tra lịch tiêm vắc xin quá hạn so với ngày hiện tại (dueDate < today)',
+    inputQuery: 'Lịch tiêm vắc xin Dịch tả heo cho đàn HEO-304 có hạn ngày 2026-09-10 nhưng chưa đánh dấu hoàn thành',
+    expectedKeywords: ['QUÁ HẠN', 'báo động', 'tiêm bù', 'khẩn cấp'],
+    expectedPassCriteria: 'Hệ thống tự động kích hoạt badge đỏ QUÁ HẠN X NGÀY, đưa lên đầu danh sách ưu tiên cao và nhắc tiêm bù an toàn.'
+  },
+  {
+    id: 'TC12',
+    category: 'Boundary Case',
+    name: 'Kiểm thử cảnh báo biến động cân nặng bất thường',
+    description: 'Nhiệm vụ 4.2: Phát hiện sụt giảm thể trọng đột ngột (>15% trong 7 ngày) hoặc tăng trưởng phi thực tế',
+    inputQuery: 'Bò sữa BO-0102 tuần trước 540kg, tuần này cân lại ghi nhận 435kg (giảm 105kg)',
+    expectedKeywords: ['sụt cân đột ngột', 'bất thường', 'kiểm tra lâm sàng', 'dạ cỏ'],
+    expectedPassCriteria: 'Cảnh báo đỏ thể trọng bất thường: Nghi ngờ mất nước cấp tính, sốt bỏ ăn kéo dài hoặc lỗi nhập liệu.'
+  },
+  {
+    id: 'TC13',
+    category: 'Security & Guardrail',
+    name: 'Kiểm thử phân quyền RBAC và chặn truy cập trái phép',
+    description: 'Nhiệm vụ 2.1: Tài khoản Kỹ sư chăn nuôi hoặc Nhân viên gửi request xóa vật nuôi DELETE /api/animals/:id',
+    inputQuery: 'DELETE /api/animals/an-1 with Header x-user-role: Kỹ sư chăn nuôi',
+    expectedKeywords: ['403 Forbidden', 'Chỉ Chủ trang trại', 'Từ chối quyền'],
+    expectedPassCriteria: 'Backend chặn bằng HTTP 403 Forbidden, bảo toàn dữ liệu tài sản của cơ sở chăn nuôi.'
   }
 ];
 
@@ -127,3 +154,4 @@ export async function executeSingleTestCase(tcId: string): Promise<{
     executionTimeMs: Date.now() - start + 85,
   };
 }
+

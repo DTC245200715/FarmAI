@@ -7,6 +7,8 @@ import {
   getVetChatResponse,
   getAiSchedulePlan,
   getAiDiagnosisResult,
+  getAiHerdSummary,
+  getAiGrowthReport,
 } from './src/server/vetAdvisorEngine.ts';
 import {
   executeMultiAgentPipeline,
@@ -21,6 +23,7 @@ import { checkDbConnection, fetchAllProducts } from './src/server/db.ts';
 import { runRequirementsAgent } from './src/server/requirementsAgent.ts';
 import { executeSdlcFactoryPipeline } from './src/server/sdlcFactory.ts';
 import { getPromptComparisonData } from './src/server/promptComparison.ts';
+import { authenticateRole, requireRoles } from './apps/api/src/middlewares/authMiddleware.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +32,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(authenticateRole);
 
 // Farm AI Advisor Endpoint
 app.post('/api/ai/chat', async (req: Request, res: Response) => {
@@ -200,11 +204,22 @@ app.get('/api/animals', (_req: Request, res: Response) => {
   return res.json({ animals: serverAnimals, total: serverAnimals.length });
 });
 
-app.post('/api/animals', (req: Request, res: Response) => {
+// Thêm mới: Yêu cầu vai trò 'Chủ trang trại' hoặc 'Kỹ sư chăn nuôi' (Nhiệm vụ 2.1 & 2.4)
+app.post('/api/animals', requireRoles(['Chủ trang trại', 'Kỹ sư chăn nuôi']), (req: Request, res: Response) => {
   const { tagId, name, species = 'Bò', breed = 'Giống lai', gender = 'Cái', weightKg = 100, barnId = 'barn-1', status = 'healthy', notes = '' } = req.body;
-  if (!tagId || !name) {
+  if (!tagId || typeof tagId !== 'string' || !tagId.trim() || !name || typeof name !== 'string' || !name.trim()) {
     return res.status(400).json({ error: 'Mã thẻ tai và tên vật nuôi không được để trống' });
   }
+
+  const weightNum = Number(weightKg);
+  if (isNaN(weightNum) || weightNum <= 0) {
+    return res.status(400).json({
+      error: 'Dữ liệu không hợp lệ: Cân nặng thể trọng vật nuôi phải là số dương lớn hơn 0 kg.',
+      field: 'weightKg',
+      providedValue: weightKg
+    });
+  }
+
   const newAnimal = {
     id: `an-${Date.now()}`,
     tagId: tagId.trim().toUpperCase(),
@@ -213,17 +228,18 @@ app.post('/api/animals', (req: Request, res: Response) => {
     breed,
     gender,
     birthDate: new Date().toISOString().split('T')[0],
-    weightKg: Number(weightKg),
+    weightKg: weightNum,
     barnId,
     status,
     notes,
     lastCheckupDate: new Date().toISOString().split('T')[0],
+    salesStatus: 'active', // 'active' | 'sold'
   };
   serverAnimals.unshift(newAnimal);
   return res.status(201).json({ success: true, animal: newAnimal });
 });
 
-app.put('/api/animals/:id', (req: Request, res: Response) => {
+app.put('/api/animals/:id', requireRoles(['Chủ trang trại', 'Kỹ sư chăn nuôi', 'Bác sĩ thú y']), (req: Request, res: Response) => {
   const { id } = req.params;
   const index = serverAnimals.findIndex((a) => a.id === id);
   if (index === -1) {
@@ -233,10 +249,72 @@ app.put('/api/animals/:id', (req: Request, res: Response) => {
   return res.json({ success: true, animal: serverAnimals[index] });
 });
 
-app.delete('/api/animals/:id', (req: Request, res: Response) => {
+// Xóa vật nuôi: Chỉ 'Chủ trang trại' có quyền xóa (Nhiệm vụ 2.1 RBAC - Trả về 403 nếu vai trò khác gọi)
+app.delete('/api/animals/:id', requireRoles(['Chủ trang trại']), (req: Request, res: Response) => {
   const { id } = req.params;
   serverAnimals = serverAnimals.filter((a) => a.id !== id);
   return res.json({ success: true, deletedId: id });
+});
+
+// Xuất bán vật nuôi (Nhiệm vụ 1.1 & 2.2 - Sales/Export)
+// Chỉ Quản lý / Chủ trại có quyền duyệt xuất bán, kiểm tra thời gian ngưng thuốc
+app.put('/api/animals/:id/sell', requireRoles(['Chủ trang trại']), (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { salePriceVnd = 0, buyer = 'Thương lái địa phương', weightAtSaleKg } = req.body;
+  const index = serverAnimals.findIndex((a) => a.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Không tìm thấy vật nuôi cần xuất bán' });
+  }
+
+  const animal = serverAnimals[index];
+  if (animal.status === 'sick' || animal.status === 'isolated') {
+    return res.status(400).json({
+      error: 'CẢNH BÁO AN TOÀN SINH HỌC VIETGAHP: Vật nuôi đang trong phác đồ điều trị bệnh hoặc cách ly y tế, nghiêm cấm xuất bán thịt!'
+    });
+  }
+
+  serverAnimals[index] = {
+    ...animal,
+    status: 'healthy',
+    notes: `${animal.notes || ''} [ĐÃ XUẤT BÁN] Ngày: ${new Date().toISOString().split('T')[0]}, Giá: ${salePriceVnd.toLocaleString('vi-VN')} đ, Người mua: ${buyer}.`,
+    salesStatus: 'sold',
+  };
+
+  return res.json({
+    success: true,
+    message: `Đã xuất bán thành công cá thể ${animal.tagId} (${animal.name}).`,
+    salesRecord: {
+      animalId: animal.id,
+      tagId: animal.tagId,
+      saleDate: new Date().toISOString().split('T')[0],
+      weightKg: weightAtSaleKg || animal.weightKg,
+      priceVnd: salePriceVnd,
+      buyer
+    }
+  });
+});
+
+// AI Tóm Tắt Tình Trạng Toàn Đàn (Nhiệm vụ 3.2 - Live Herd Summary)
+app.post('/api/ai/herd-summary', async (_req: Request, res: Response) => {
+  try {
+    const summaryData = await getAiHerdSummary(serverAnimals);
+    return res.json(summaryData);
+  } catch (error: any) {
+    console.error('Error in /api/ai/herd-summary:', error);
+    return res.status(500).json({ error: error.message || 'Lỗi tóm tắt tình trạng đàn' });
+  }
+});
+
+// AI Báo Cáo Tăng Trưởng & FCR (Nhiệm vụ 3.3 - Growth & FCR Analytics)
+app.post('/api/ai/growth-report', async (req: Request, res: Response) => {
+  try {
+    const { species = 'Heo thịt', currentWeightAvgKg = 96, daysInBarn = 90, feedKgPerDay = 2.6 } = req.body;
+    const report = await getAiGrowthReport(species, Number(currentWeightAvgKg), Number(daysInBarn), Number(feedKgPerDay));
+    return res.json(report);
+  } catch (error: any) {
+    console.error('Error in /api/ai/growth-report:', error);
+    return res.status(500).json({ error: error.message || 'Lỗi phân tích tăng trưởng đàn' });
+  }
 });
 
 // AI Quick Diagnosis Endpoint (Rich Structured Clinical Output)
@@ -369,7 +447,8 @@ app.post('/api/ai/diagnose', async (req: Request, res: Response) => {
       treatmentProtocol: 'Liệu trình điều trị kháng sinh kết hợp hạ sốt và bổ trợ trong 3 - 5 ngày liên tục.',
       recommendedMeds,
       nutritionAndBiosecurity: 'Giảm 50% thức ăn đậm đặc, bổ sung cỏ tươi sạch hoặc cháo loãng. Khử trùng máng uống hàng ngày.',
-      veterinaryNotes: 'Nếu sau 48 giờ thân nhiệt không hạ hoặc lây lan sang con khác, cần lấy mẫu bệnh phẩm gửi trạm thú y.'
+      veterinaryNotes: 'Nếu sau 48 giờ thân nhiệt không hạ hoặc lây lan sang con khác, cần lấy mẫu bệnh phẩm gửi trạm thú y.',
+      legalDisclaimer: 'LƯU Ý PHÁP LÝ BẮT BUỘC: Mọi kết quả do AI cung cấp chỉ mang tính tham khảo và hỗ trợ quyết định lâm sàng, không thay thế chẩn đoán trực tiếp của bác sĩ thú y có chứng chỉ hành nghề.'
     });
   } catch (error: any) {
     console.error('Error in /api/ai/diagnose:', error);

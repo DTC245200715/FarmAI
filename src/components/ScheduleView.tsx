@@ -19,7 +19,9 @@ export const ScheduleView: React.FC = () => {
   const { tasks, addTask, updateTask, deleteTask, toggleTaskCompleted, setActiveTab } = useFarm();
 
   const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed' | 'overdue'>('all');
+
+  const today = new Date().toISOString().split('T')[0];
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<CareTask | null>(null);
@@ -79,8 +81,14 @@ export const ScheduleView: React.FC = () => {
     }
   };
 
+  const overdueTasks = tasks.filter((t) => t.status === 'pending' && t.dueDate < today);
+  const overdueCount = overdueTasks.length;
+
   const filteredTasks = tasks.filter((task) => {
     const matchesCategory = filterCategory === 'all' || task.category === filterCategory;
+    if (filterStatus === 'overdue') {
+      return matchesCategory && task.status === 'pending' && task.dueDate < today;
+    }
     const matchesStatus = filterStatus === 'all' || task.status === filterStatus;
     return matchesCategory && matchesStatus;
   });
@@ -178,6 +186,18 @@ export const ScheduleView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-1.5">
+          {overdueCount > 0 && (
+            <button
+              onClick={() => setFilterStatus('overdue')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all animate-pulse ${
+                filterStatus === 'overdue'
+                  ? 'bg-rose-600 text-white shadow-sm'
+                  : 'bg-rose-100 text-rose-800 hover:bg-rose-200'
+              }`}
+            >
+              ⚠️ Quá hạn ({overdueCount})
+            </button>
+          )}
           <button
             onClick={() => setFilterStatus('all')}
             className={`px-2.5 py-1 rounded-lg text-xs font-medium ${
@@ -214,12 +234,19 @@ export const ScheduleView: React.FC = () => {
         {filteredTasks.length > 0 ? (
           filteredTasks.map((task) => {
             const isDone = task.status === 'completed';
+            const isOverdue = !isDone && Boolean(task.dueDate && task.dueDate < today);
+            const overdueDays = isOverdue
+              ? Math.max(1, Math.floor((new Date(today).getTime() - new Date(task.dueDate).getTime()) / (1000 * 60 * 60 * 24)))
+              : 0;
+
             return (
               <div
                 key={task.id}
                 className={`p-4 rounded-2xl border transition-all flex items-start gap-3.5 text-xs ${
                   isDone
                     ? 'bg-stone-50 border-stone-200 opacity-75'
+                    : isOverdue
+                    ? 'bg-red-50/40 border-red-300 shadow-sm'
                     : 'bg-white border-stone-200 hover:border-emerald-300 shadow-xs'
                 }`}
               >
@@ -247,6 +274,13 @@ export const ScheduleView: React.FC = () => {
                     >
                       {task.title}
                     </span>
+
+                    {isOverdue && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-600 text-white animate-pulse flex items-center gap-1 shadow-xs">
+                        <AlertCircle className="w-3 h-3" />
+                        QUÁ HẠN {overdueDays} NGÀY
+                      </span>
+                    )}
 
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 text-stone-700">
                       {task.category}

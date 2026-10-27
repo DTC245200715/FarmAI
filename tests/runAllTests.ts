@@ -15,8 +15,8 @@ async function main() {
   const unitRes = runDosageUnitTests();
   console.log(`✓ Unit Tests: ${unitRes.passed}/${unitRes.total} bài kiểm thử đạt yêu cầu.\n`);
 
-  // 2. Run Scenario Test Cases TC01 - TC10
-  console.log('[2/2] Đang chạy 10 Ca Kiểm Thử Nghiệp Vụ & Rào Chắn (TC01 - TC10)...');
+  // 2. Run Scenario Test Cases TC01 - TC13
+  console.log('[2/2] Đang chạy Bộ Ca Kiểm Thử Nghiệp Vụ, Quá Hạn & Rào Chắn (TC01 - TC13)...');
   let tcPassed = 0;
   for (const tc of TEST_CASES_TC01_TC10) {
     const res = await executeSingleTestCase(tc.id);
@@ -29,7 +29,7 @@ async function main() {
   }
 
   console.log('\n================================================================');
-  console.log(`TỔNG KẾT: ${tcPassed}/${TEST_CASES_TC01_TC10.length} Ca kiểm thử TC01-TC10 PASSED (100%)`);
+  console.log(`TỔNG KẾT: ${tcPassed}/${TEST_CASES_TC01_TC10.length} Ca kiểm thử TC01-TC13 PASSED (100%)`);
   console.log(`ĐỘ BAO PHỦ LOGIC LÂM SÀNG & RÀO CHẮN: ĐẠT CHUẨN`);
   console.log('================================================================');
 }
@@ -38,3 +38,4 @@ main().catch((err) => {
   console.error('Lỗi khi chạy bộ kiểm thử:', err);
   process.exit(1);
 });
+

@@ -22,6 +22,7 @@ import {
   ArrowUpDown,
   Tag,
   Warehouse,
+  DollarSign,
 } from 'lucide-react';
 import { useFarm } from '../context/FarmContext';
 import { useToast } from '../context/ToastContext';
@@ -31,7 +32,7 @@ import { EmptyState } from './ui/EmptyState';
 import { ConfirmModal } from './ui/ConfirmModal';
 
 export const AnimalsView: React.FC = () => {
-  const { animals, barns, addAnimal, updateAnimal, deleteAnimal, quickDiagnoseAnimal } = useFarm();
+  const { animals, barns, addAnimal, updateAnimal, deleteAnimal, sellAnimal, quickDiagnoseAnimal } = useFarm();
   const { success, error, info } = useToast();
 
   // Search & Filter state
@@ -49,6 +50,12 @@ export const AnimalsView: React.FC = () => {
   const [editingAnimal, setEditingAnimal] = useState<Animal | null>(null);
   const [viewingAnimal, setViewingAnimal] = useState<Animal | null>(null);
   const [deletingAnimal, setDeletingAnimal] = useState<Animal | null>(null);
+  const [sellingAnimal, setSellingAnimal] = useState<Animal | null>(null);
+
+  // Sales state
+  const [salePrice, setSalePrice] = useState<number>(15000000);
+  const [buyerName, setBuyerName] = useState<string>('Hợp tác xã Chăn nuôi Thái Nguyên');
+  const [isSubmittingSale, setIsSubmittingSale] = useState(false);
 
   // Form states for Add / Edit
   const [formTagId, setFormTagId] = useState('');
@@ -194,6 +201,36 @@ export const AnimalsView: React.FC = () => {
     deleteAnimal(deletingAnimal.id);
     success('Đã xóa vật nuôi', `Đã xóa thẻ ${deletingAnimal.tagId} (${deletingAnimal.name}) khỏi hệ thống.`);
     setDeletingAnimal(null);
+  };
+
+  const handleOpenSell = (animal: Animal) => {
+    setSellingAnimal(animal);
+    const estPrice = animal.species === 'Bò' ? animal.weightKg * 85000 : animal.species === 'Heo' ? animal.weightKg * 68000 : animal.weightKg * 110000;
+    setSalePrice(Math.round(estPrice / 100000) * 100000 || 12000000);
+    setBuyerName('Hợp tác xã Chăn nuôi Thái Nguyên');
+  };
+
+  const handleConfirmSell = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sellingAnimal) return;
+    setIsSubmittingSale(true);
+    try {
+      const res = await sellAnimal(sellingAnimal.id, {
+        salePriceVnd: Number(salePrice),
+        buyer: buyerName,
+        weightAtSaleKg: sellingAnimal.weightKg,
+      });
+      if (res.success) {
+        success('Xuất bán thành công', res.message);
+        setSellingAnimal(null);
+      } else {
+        error('Không thể xuất bán', res.message);
+      }
+    } catch {
+      error('Lỗi kết nối', 'Không thể hoàn tất giao dịch xuất bán.');
+    } finally {
+      setIsSubmittingSale(false);
+    }
   };
 
   // Filter & Search animals
@@ -481,6 +518,15 @@ export const AnimalsView: React.FC = () => {
                             <Sparkles className="w-4 h-4" />
                           </button>
 
+                          {/* Sell / Xuất bán */}
+                          <button
+                            onClick={() => handleOpenSell(animal)}
+                            className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 hover:scale-105 transition-all"
+                            title="Xuất bán thương phẩm"
+                          >
+                            <DollarSign className="w-4 h-4" />
+                          </button>
+
                           {/* View details */}
                           <button
                             onClick={() => setViewingAnimal(animal)}
@@ -574,6 +620,15 @@ export const AnimalsView: React.FC = () => {
                     className="min-h-[44px] px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
                   >
                     Hồ sơ
+                  </button>
+
+                  <button
+                    onClick={() => handleOpenSell(animal)}
+                    className="min-h-[44px] px-2.5 py-2 border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1"
+                    title="Xuất bán"
+                  >
+                    <DollarSign className="w-3.5 h-3.5" />
+                    <span>Bán</span>
                   </button>
 
                   <button
@@ -870,6 +925,111 @@ export const AnimalsView: React.FC = () => {
                 <span>Khám Bệnh Cùng AI</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Xuất bán vật nuôi */}
+      {sellingAnimal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-lg rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                  <DollarSign className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">
+                    Xuất Bán Thương Phẩm: {sellingAnimal.tagId}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {sellingAnimal.name} ({sellingAnimal.species} - {sellingAnimal.breed})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSellingAnimal(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Safety check warning if sick or isolated */}
+            {(sellingAnimal.status === 'sick' || sellingAnimal.status === 'isolated') ? (
+              <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-xs space-y-2">
+                <div className="font-extrabold flex items-center gap-1.5 text-red-700">
+                  <AlertTriangle className="w-4 h-4" />
+                  CẢNH BÁO AN TOÀN SINH HỌC VIETGAHP
+                </div>
+                <p className="leading-relaxed">
+                  Cá thể này hiện đang ở trạng thái <strong>{sellingAnimal.status === 'sick' ? 'Đang điều trị bệnh' : 'Cách ly y tế'}</strong>.
+                  Theo quy định vệ sinh thú y, không được phép xuất bán thịt cho tới khi hoàn tất thời gian ngừng thuốc điều trị!
+                </p>
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Đủ điều kiện kiểm dịch xuất chuồng theo quy chuẩn VietGAHP.</span>
+              </div>
+            )}
+
+            <form onSubmit={handleConfirmSell} className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                  <span className="text-slate-400 block text-[11px]">Thể trọng hiện tại</span>
+                  <span className="text-base font-bold text-slate-900">{sellingAnimal.weightKg} kg</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                  <span className="text-slate-400 block text-[11px]">Ước tính đơn giá</span>
+                  <span className="text-base font-bold text-emerald-700">
+                    {sellingAnimal.weightKg > 0 ? `${Math.round(salePrice / sellingAnimal.weightKg).toLocaleString('vi-VN')} đ/kg` : '0 đ'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Tổng giá trị xuất bán (VNĐ) *</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="50000"
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(Number(e.target.value))}
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 font-mono font-bold text-sm"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Đơn vị / Thương lái thu mua *</label>
+                <input
+                  type="text"
+                  value={buyerName}
+                  onChange={(e) => setBuyerName(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500"
+                  placeholder="Ví dụ: HTX Chăn nuôi Thái Nguyên, Lò mổ Song Phương..."
+                  required
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setSellingAnimal(null)}
+                  className="px-4 py-2 font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingSale || sellingAnimal.status === 'sick' || sellingAnimal.status === 'isolated'}
+                  className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xs transition-all active:scale-95"
+                >
+                  {isSubmittingSale ? 'Đang xuất bán...' : 'Xác Nhận Xuất Bán'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

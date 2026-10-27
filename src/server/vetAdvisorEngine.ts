@@ -1325,5 +1325,129 @@ export async function getAiDiagnosisResult(
     ],
     warningNote:
       'Nếu vật nuôi có biểu hiện xuất huyết dưới da, co giật thần kinh hoặc tử vong nhanh bất thường, cần báo ngay cho Trạm Thú Y địa phương để lấy mẫu xét nghiệm dịch tễ an toàn sinh học.',
+    legalDisclaimer:
+      'LƯU Ý PHÁP LÝ: Mọi kết quả do AI cung cấp chỉ mang tính tham khảo và hỗ trợ quyết định, không thay thế chẩn đoán trực tiếp của bác sĩ thú y có chứng chỉ hành nghề.',
+  };
+}
+
+/**
+ * AI Tóm Tắt Tình Trạng Toàn Đàn (Nhiệm vụ 3.2)
+ * Nhận danh sách cá thể thực tế từ CSDL để phân tích dịch tễ và tổng quan sức khỏe
+ */
+export async function getAiHerdSummary(animals: any[]): Promise<{
+  summary: string;
+  totalAnimals: number;
+  healthyRate: string;
+  epidemicRisk: 'Thấp' | 'Trung bình' | 'Cao' | 'Nguy cơ bùng phát';
+  priorityActions: string[];
+  isolatedAnimals: string[];
+  legalDisclaimer: string;
+}> {
+  const total = animals.length;
+  const sick = animals.filter((a) => a.status === 'sick' || a.status === 'isolated');
+  const monitoring = animals.filter((a) => a.status === 'monitoring');
+  const pregnant = animals.filter((a) => a.status === 'pregnant');
+  const healthy = animals.filter((a) => a.status === 'healthy');
+
+  const healthyRate = total > 0 ? `${Math.round((healthy.length / total) * 100)}%` : '0%';
+  const isHighRisk = sick.length >= 2 || sick.some((a) => (a.notes || '').toLowerCase().includes('sốt cao'));
+  const epidemicRisk = isHighRisk ? 'Nguy cơ bùng phát' : sick.length > 0 ? 'Trung bình' : 'Thấp';
+
+  const contextData = animals.map((a) => `- ${a.tagId} (${a.species} ${a.breed}): ${a.status}, Trọng lượng: ${a.weightKg}kg. Ghi chú: ${a.notes || 'Bình thường'}`).join('\n');
+
+  const prompt = `[ROLE]: Giám đốc Thú y lâm sàng FarmPro AI.
+[DANH SÁCH VẬT NUÔI THỰC TẾ]:
+${contextData}
+[YÊU CẦU]: Tóm tắt tình trạng đàn trong 3-4 câu. Đưa ra 3 hành động an toàn sinh học ưu tiên nhất hôm nay. Trả về JSON: { "summary": "...", "priorityActions": ["...", "..."] }`;
+
+  try {
+    const aiClient = getAi();
+    if (aiClient) {
+      const response = await withTimeout(
+        aiClient.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt,
+        }),
+        6000
+      );
+      if (response?.text) {
+        const cleaned = response.text.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(cleaned);
+        return {
+          summary: parsed.summary || `Tổng đàn có ${total} cá thể. Tỷ lệ khỏe mạnh đạt ${healthyRate}. Hiện có ${sick.length} cá thể cần cách ly y tế khẩn cấp.`,
+          totalAnimals: total,
+          healthyRate,
+          epidemicRisk,
+          priorityActions: parsed.priorityActions || [
+            'Duy trì rải vôi bột khử trùng lối vào chuồng cách ly.',
+            'Kiểm tra thân nhiệt hàng ngày cho các cá thể đang theo dõi.',
+            'Bảo đảm thông gió chuồng nuôi không bị ẩm ướt.'
+          ],
+          isolatedAnimals: sick.map((s) => `${s.tagId} (${s.name})`),
+          legalDisclaimer: 'LƯU Ý PHÁP LÝ: Mọi kết quả do AI cung cấp chỉ mang tính tham khảo và không thay thế chẩn đoán trực tiếp của bác sĩ thú y có chứng chỉ hành nghề.'
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Fallback to deterministic herd summary engine');
+  }
+
+  return {
+    summary: `Tổng đàn hiện tại có ${total} cá thể (${healthy.length} khỏe mạnh, ${monitoring.length} theo dõi, ${sick.length} điều trị cách ly, ${pregnant.length} mang thai). Tỷ lệ an toàn đạt ${healthyRate}.`,
+    totalAnimals: total,
+    healthyRate,
+    epidemicRisk,
+    priorityActions: [
+      `Tiến hành đo thân nhiệt và tiêm hạ sốt cho cá thể ${sick[0]?.tagId || 'đang ốm'} tại chuồng cách ly.`,
+      'Phun sát trùng Omnicide 1:200 toàn bộ lối đi chuồng nuôi.',
+      'Bổ sung điện giải Gluco-K-C thảo mộc vào máng uống tự do.'
+    ],
+    isolatedAnimals: sick.map((s) => `${s.tagId} (${s.name})`),
+    legalDisclaimer: 'LƯU Ý PHÁP LÝ: Mọi kết quả do AI cung cấp chỉ mang tính tham khảo và không thay thế chẩn đoán trực tiếp của bác sĩ thú y có chứng chỉ hành nghề.'
+  };
+}
+
+/**
+ * AI Báo Cáo Tăng Trưởng & Dự Báo Xuất Chuồng (Nhiệm vụ 3.3)
+ * Tính ADG (Average Daily Gain), FCR (Feed Conversion Ratio) và khuyến nghị dinh dưỡng
+ */
+export async function getAiGrowthReport(species: string, currentWeightAvgKg: number, daysInBarn: number, feedKgPerDay: number): Promise<{
+  adgKgPerDay: number;
+  fcr: number;
+  growthEvaluation: 'Rất tốt' | 'Đạt chuẩn' | 'Chậm lớn cần can thiệp';
+  estimatedDaysToMarket: number;
+  marketTargetWeightKg: number;
+  nutritionalAdvice: string;
+  feedOptimizationTips: string[];
+  legalDisclaimer: string;
+}> {
+  // Tính tốc độ tăng trọng bình quân ngày (ADG)
+  const initialWeight = species.toLowerCase().includes('heo') ? 25 : 250;
+  const gainedWeight = Math.max(5, currentWeightAvgKg - initialWeight);
+  const adg = Math.round((gainedWeight / Math.max(1, daysInBarn)) * 100) / 100;
+
+  // Tính hệ số FCR = Tổng thức ăn tiêu thụ / Tăng trọng
+  const fcr = Math.round((feedKgPerDay / Math.max(0.2, adg)) * 10) / 10;
+
+  const targetWeight = species.toLowerCase().includes('heo') ? 115 : 600;
+  const remainingWeight = Math.max(0, targetWeight - currentWeightAvgKg);
+  const estimatedDays = adg > 0 ? Math.ceil(remainingWeight / adg) : 30;
+
+  const evaluation = adg >= (species.toLowerCase().includes('heo') ? 0.75 : 1.2) ? 'Rất tốt' : adg >= 0.5 ? 'Đạt chuẩn' : 'Chậm lớn cần can thiệp';
+
+  return {
+    adgKgPerDay: adg,
+    fcr: fcr,
+    growthEvaluation: evaluation,
+    estimatedDaysToMarket: estimatedDays,
+    marketTargetWeightKg: targetWeight,
+    nutritionalAdvice: `Với tốc độ tăng trọng ADG đạt ${adg} kg/ngày, đàn ${species} đang phát triển ${evaluation.toLowerCase()}. Dự kiến đạt trọng lượng xuất bán ${targetWeight}kg sau khoảng ${estimatedDays} ngày nữa.`,
+    feedOptimizationTips: [
+      `Cân đối tỷ lệ đạm tiêu hóa đạt 16-18% trong khẩu phần cám hỗn hợp.`,
+      `Kiểm soát hệ số FCR ở mức ${fcr} để tối ưu hóa chi phí thức ăn/kg tăng trọng.`,
+      `Bổ sung men vi sinh sống Bio-Subtilis định kỳ 2 lần/tuần giúp đường ruột hấp thu triệt để dưỡng chất.`,
+      `Ngưng hoàn toàn việc sử dụng kháng sinh kích thích tăng trọng trước ngày xuất chuồng tối thiểu 28 ngày theo quy chuẩn VietGAHP.`
+    ],
+    legalDisclaimer: 'LƯU Ý PHÁP LÝ: Mọi kết quả do AI cung cấp chỉ mang tính tham khảo và không thay thế chẩn đoán trực tiếp của bác sĩ thú y có chứng chỉ hành nghề.'
   };
 }

@@ -22,3 +22,4 @@ export function createApiApp() {
 
   return app;
 }
+

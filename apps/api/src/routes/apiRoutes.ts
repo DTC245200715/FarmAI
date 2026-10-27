@@ -4,8 +4,11 @@ import { executeSdlcFactoryPipeline } from '../../../../sdlc-factory';
 import { getPromptComparisonData } from '../../../../prompts/benchmark/promptBenchmark';
 import { TEST_CASES_TC01_TC10, executeSingleTestCase } from '../../../../tests/scenarios/testCasesTC01_TC10';
 import { runDosageUnitTests } from '../../../../tests/unit/dosageCalculator.test';
+import { authenticateRole, requireRoles } from '../middlewares/authMiddleware';
 
 export const apiRouter = Router();
+
+apiRouter.use(authenticateRole);
 
 // 1. Health & Monitoring
 apiRouter.get('/health', async (_req: Request, res: Response) => {
@@ -96,3 +99,4 @@ apiRouter.post('/ai/multi-agent/run-all-tests', async (_req: Request, res: Respo
     return res.status(500).json({ error: error.message });
   }
 });
+

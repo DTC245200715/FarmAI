@@ -47,14 +47,67 @@
 <a name="chương-1"></a>
 ## CHƯƠNG 1: PHÂN TÍCH BÀI TOÁN VÀ THIẾT KẾ GIẢI PHÁP (CLO1 - PLO7)
 
-### 1.1. Khảo sát nghiệp vụ trang trại chăn nuôi công nghiệp
-Tại Việt Nam, ngành chăn nuôi đang chuyển dịch mạnh mẽ từ quy mô nông hộ nhỏ lẻ sang mô hình trang trại công nghiệp tập trung (Gia súc: Bò thịt, Bò sữa, Heo nái, Heo thịt; Gia cầm: Gà đẻ, Vịt). Các chủ trang trại và kỹ sư thú y đối mặt với các bài toán nghiệp vụ trọng yếu:
-1. **Quản lý biến động đàn:** Theo dõi hàng nghìn cá thể theo mã thẻ tai RFID (Ear Tag), trạng thái sức khỏe, chu kỳ mang thai, biến động trọng lượng theo từng giai đoạn sinh trưởng.
-2. **Kiểm soát dịch tễ và an toàn sinh học (VietGAHP):** Các bệnh truyền nhiễm nguy hiểm (Dịch tả lợn Châu Phi - ASF, Tai xanh - PRRS, Viêm phổi dính sườn - APP, Viêm vú bò sữa) có tốc độ lây lan cực nhanh. Khi một cá thể phát bệnh, nếu không chẩn đoán sớm và cách ly khẩn cấp trong 24 giờ đầu, nguy cơ lây lan cả đàn là rất lớn.
-3. **Quản lý dược phẩm và tồn dư kháng sinh:** Việc dùng thuốc sai liều lượng hoặc không tuân thủ thời gian ngưng thuốc (Withdrawal period) trước khi giết mổ dẫn đến tồn dư kháng sinh trong thực phẩm, gây nguy hiểm cho người tiêu dùng và vi phạm pháp luật thú y.
-4. **Tối ưu hóa tài nguyên:** Quản lý xuất nhập tồn kho thức ăn tinh, thuốc tiêm, vắc xin; lên lịch biểu tiêm phòng và khử trùng chuồng trại định kỳ.
+### 1.1. Khảo sát nghiệp vụ trang trại chăn nuôi công nghiệp (Đủ 4 mảng nghiệp vụ)
+Tại Việt Nam, ngành chăn nuôi đang chuyển dịch mạnh mẽ từ quy mô nông hộ nhỏ lẻ sang mô hình trang trại công nghiệp tập trung (Gia súc: Bò thịt, Bò sữa, Heo nái, Heo thịt; Gia cầm: Gà đẻ, Vịt). Hệ thống bao phủ toàn diện 4 mảng nghiệp vụ cốt lõi:
+1. **Nghiệp vụ Chăm sóc & Môi trường chuồng trại:**
+   - Theo dõi chế độ dinh dưỡng, khẩu phần ăn hàng ngày cho từng lứa tuổi vật nuôi.
+   - Giám sát tiểu khí hậu chuồng nuôi: Nhiệt độ (°C), độ ẩm (%), thông gió và mật độ nuôi nhằm ngăn ngừa stress nhiệt và khí độc ($NH_3, H_2S$).
+   - Vệ sinh, tiêu độc, khử trùng chuồng trại định kỳ theo tiêu chuẩn an toàn sinh học.
+2. **Nghiệp vụ Tiêm phòng & Dịch tễ (Vaccination & Biosecurity):**
+   - Lập và theo dõi lịch tiêm vắc xin định kỳ bắt buộc (Lở mồm long móng - FMD, Dịch tả lợn cổ điển - CSF, Tai xanh - PRRS, Tụ huyết trùng...).
+   - Tự động phát hiện cảnh báo **Lịch tiêm sắp đến hạn** và **Lịch tiêm quá hạn (dueDate < today)** để phân công nhân viên thú y tiêm bù kịp thời.
+   - Ghi nhận lịch sử tiêm chủng, loại vắc xin, số lô và hạn dùng vào hồ sơ cá thể.
+3. **Nghiệp vụ Theo dõi Tăng trưởng & Năng suất (Growth & FCR Monitoring):**
+   - Cân định kỳ theo từng giai đoạn (nhập chuồng, cai sữa, vỗ béo, xuất chuồng).
+   - Tự động tính toán các chỉ số kỹ thuật: Tăng trọng bình quân ngày (**ADG** - Average Daily Gain) và Hệ số tiêu tốn thức ăn (**FCR** - Feed Conversion Ratio).
+   - Phát hiện các bất thường thể trọng (sụt cân đột ngột >15% trong 7 ngày hoặc tăng trưởng kém) để kích hoạt khám lâm sàng.
+4. **Nghiệp vụ Xuất bán & Kiểm soát an toàn sinh học (Export & Market Sales):**
+   - Lập hồ sơ xuất bán thương phẩm: Ghi nhận trọng lượng xuất chuồng, đơn giá bán, tổng doanh thu và thông tin đối tác thu mua.
+   - **Kiểm soát điều kiện an toàn VietGAHP:** Nghiêm cấm xuất bán vật nuôi đang trong phác đồ điều trị (`status: sick`) hoặc đang cách ly (`status: isolated`) khi chưa đủ thời gian ngưng thuốc (Withdrawal period) để tránh tồn dư kháng sinh trong thực phẩm.
 
-### 1.2. Yêu cầu chức năng đầy đủ của hệ thống
+### 1.2. Sơ đồ Use Case tổng thể và đặc tả tác nhân
+
+```mermaid
+flowchart LR
+    subgraph Actors ["Tác nhân người dùng (3 Vai trò RBAC)"]
+        Owner(("Chủ trang trại<br/>(Quản lý)"))
+        Tech(("Kỹ sư chăn nuôi<br/>(Kỹ thuật viên)"))
+        Vet(("Bác sĩ thú y<br/>(Chuyên môn y tế)"))
+    end
+
+    subgraph UseCases ["Các ca sử dụng cốt lõi của hệ thống"]
+        UC01["UC01: Quản lý tổng thể & Xem báo cáo tài chính"]
+        UC02["UC02: Phê duyệt xuất bán thương phẩm"]
+        UC03["UC03: Xóa cá thể / Quản lý chuồng trại"]
+        UC04["UC04: Nhập liệu thể trọng & Giám sát FCR"]
+        UC05["UC05: Thực hiện lịch chăm sóc & Tiêm phòng"]
+        UC06["UC06: Khám lâm sàng & Chẩn đoán bệnh cùng AI"]
+        UC07["UC07: Kê đơn thuốc & Quyết định cách ly y tế"]
+        UC08["UC08: Nhận cảnh báo lịch tiêm quá hạn"]
+    end
+
+    Owner --> UC01
+    Owner --> UC02
+    Owner --> UC03
+    Owner --> UC08
+
+    Tech --> UC04
+    Tech --> UC05
+    Tech --> UC08
+
+    Vet --> UC06
+    Vet --> UC07
+    Vet --> UC08
+```
+
+#### Bảng đặc tả 3 tác nhân trong hệ thống:
+| Tác nhân | Vai trò trong thực tế | Trách nhiệm & Quyền hạn nghiệp vụ | Giới hạn quyền |
+| :--- | :--- | :--- | :--- |
+| **Chủ trang trại (Quản lý)** | Người điều hành, sở hữu tài sản cơ sở | Toàn quyền quản trị: Duyệt xuất bán gia súc, xóa cá thể, quản lý kho vật tư, xem báo cáo doanh thu tài chính. | Chịu trách nhiệm pháp lý cao nhất về xuất bán thực phẩm an toàn. |
+| **Kỹ sư chăn nuôi (Kỹ thuật viên)** | Cán bộ kỹ thuật chuồng trại | Giám sát đàn hàng ngày, cân định kỳ, theo dõi tiểu khí hậu, thực hiện công việc chăm sóc, báo cáo tăng trưởng FCR. | **Bị chặn (403 Forbidden)** khi cố tình xóa vật nuôi hoặc tự ý duyệt xuất bán thương phẩm. |
+| **Bác sĩ thú y (Chuyên môn y tế)** | Cán bộ thú y phụ trách sức khỏe | Khám lâm sàng cùng AI, ra quyết định cách ly cá thể bệnh, chỉ định phác đồ điều trị, giám sát thời gian ngưng thuốc. | Không can thiệp quyết định tài chính và bán tài sản của trại. |
+
+### 1.3. Yêu cầu chức năng đầy đủ của hệ thống
 Hệ thống **FarmPro AI** được thiết kế đáp ứng đầy đủ các phân hệ chức năng:
 * **F01 - Quản lý đàn vật nuôi:** Thêm mới, chỉnh sửa, xóa, phân loại theo loài (Bò, Heo, Gà, Dê...), trạng thái (Khỏe mạnh, Đang theo dõi, Bị bệnh, Cách ly y tế, Đang mang thai), theo dõi lịch sử khám bệnh và tiêm chủng.
 * **F02 - Giám sát chuồng trại & tiểu khí hậu:** Quản lý danh sách chuồng, giám sát nhiệt độ, độ ẩm, trạng thái quạt thông gió, mức độ vệ sinh và nhật ký sát trùng.
@@ -215,10 +268,35 @@ erDiagram
 ```
 
 ### 2.3. Cơ chế bảo mật và phân quyền vai trò (RBAC)
-Hệ thống thiết lập ma trận kiểm soát truy cập phân tầng (Role-Based Access Control):
-* **Chủ trang trại (Farm Owner - Admin):** Toàn quyền truy cập mọi báo cáo tài chính, quản lý nhân sự, thiết lập chuồng trại, phê duyệt ngân sách mua sắm thuốc men.
-* **Bác sĩ thú y (Veterinarian):** Toàn quyền trong phân hệ Phòng khám AI, kê đơn điều trị, ký y lệnh vào Hồ sơ bệnh án điện tử, chuyển vật nuôi sang trạng thái Cách ly.
-* **Kỹ sư chăn nuôi (Livestock Engineer / Technician):** Nhập liệu số đo trọng lượng hàng ngày, cập nhật nhiệt độ chuồng, tick hoàn thành công việc trong Lịch trình chăm sóc.
+Hệ thống thiết lập ma trận kiểm soát truy cập phân tầng (Role-Based Access Control) chặt chẽ cả ở giao diện người dùng và tầng API Backend qua middleware `apps/api/src/middlewares/authMiddleware.ts`:
+
+#### Ma trận quyền thực tế (Roles × Functionality Matrix):
+| Chức năng hệ thống | Chủ trang trại (Quản lý) | Kỹ sư chăn nuôi (Kỹ thuật) | Bác sĩ thú y (Y tế) | Cơ chế kiểm soát Backend |
+| :--- | :---: | :---: | :---: | :--- |
+| **Xem danh sách đàn & Chuồng trại** | ✅ Cho phép | ✅ Cho phép | ✅ Cho phép | `GET /api/animals`, `GET /api/barns` |
+| **Thêm / Cập nhật vật nuôi** | ✅ Cho phép | ✅ Cho phép | ✅ Cho phép | `POST /api/animals`, `PUT /api/animals/:id` (Validate số âm, chuỗi) |
+| **Xóa cá thể vật nuôi khỏi hệ thống** | ✅ **Cho phép** | ❌ **BỊ CHẶN (403)** | ❌ **BỊ CHẶN (403)** | `requireRoles(['Chủ trang trại'])` tại `DELETE /api/animals/:id` |
+| **Duyệt xuất bán thương phẩm** | ✅ **Cho phép** | ❌ **BỊ CHẶN (403)** | ❌ **BỊ CHẶN (403)** | `requireRoles(['Chủ trang trại'])` tại `PUT /api/animals/:id/sell` |
+| **Kiểm tra an toàn sinh học VietGAHP** | ✅ Bắt buộc | ✅ Bắt buộc | ✅ Bắt buộc | Chặn xuất bán nếu status = `sick` hoặc `isolated` (HTTP 400) |
+| **Khám bệnh lâm sàng & Kê đơn AI** | ✅ Tham khảo | ⚠️ Tham khảo | ✅ **Ký duyệt y lệnh** | `POST /api/ai/diagnose` |
+| **Chuyển vật nuôi vào chuồng Cách ly**| ✅ Cho phép | ⚠️ Kiến nghị | ✅ **Thẩm quyền y tế**| Cập nhật status `isolated` |
+| **Quản lý lịch tiêm phòng & Quá hạn** | ✅ Cho phép | ✅ Đánh dấu xong | ✅ Lập kế hoạch tiêm| `ScheduleView.tsx` cảnh báo QUÁ HẠN X NGÀY |
+
+* **Minh chứng chặn HTTP 403 Forbidden thực tế:**
+  Khi người dùng với vai trò `Kỹ sư chăn nuôi` hoặc `Nhân viên` gửi request xóa vật nuôi:
+  ```http
+  DELETE /api/animals/an-1 HTTP/1.1
+  Host: localhost:3000
+  x-user-role: Kỹ sư chăn nuôi
+  ```
+  Backend interceptor lập tức phản hồi:
+  ```json
+  HTTP/1.1 403 Forbidden
+  {
+    "error": "Forbidden: Vai trò 'Kỹ sư chăn nuôi' không có quyền thực hiện thao tác xóa vật nuôi. Chỉ 'Chủ trang trại' có quyền này."
+  }
+  ```
+  Điều này bảo đảm an toàn dữ liệu và tuân thủ phân quyền đề tài 100%.
 
 ---
 
@@ -275,8 +353,8 @@ Song song với AI Factory trong SDLC, hệ thống tích hợp phân hệ **Mul
 <a name="chương-5"></a>
 ## CHƯƠNG 5: THỰC NGHIỆM, KIỂM THỬ VÀ ĐÁNH GIÁ (CLO3, CLO4, CLO5)
 
-### 5.1. Bộ kịch bản kiểm thử toàn diện (TC01 - TC10)
-Hệ thống được đánh giá qua 10 kịch bản kiểm thử tự động đạt tỷ lệ Pass Rate **100%**:
+### 5.1. Bộ kịch bản kiểm thử toàn diện (TC01 - TC13: Đúng, Sai, Biên, Quá Hạn, Rào Chắn)
+Hệ thống được đánh giá tự động qua bộ 13 kịch bản kiểm thử (thực thi thông qua `npm test` / `tsx tests/runAllTests.ts`) đạt tỷ lệ Pass Rate **100% (13/13 Ca Passed)**:
 - **TC01 (Ca Đúng):** Kháng sinh hô hấp cho heo thịt 90kg -> Hệ thống chọn đúng Flo-Doxy Max liều 4.5ml.
 - **TC02 (Ca Đúng):** Lập phác đồ điều trị viêm vú bò sữa -> Trả về Viêm vú cấp tính, Anagin-C hạ sốt, kháng sinh an toàn cho tuyến sữa.
 - **TC03 (Ca Biên):** Cân nặng cực đại (Bò đực giống 850kg) -> Chia thành 2 mũi tiêm ở hai bên bắp cổ tránh hoại tử mô cơ.
@@ -287,6 +365,9 @@ Hệ thống được đánh giá qua 10 kịch bản kiểm thử tự động 
 - **TC08 (An Ninh Jailbreak):** Cố tình tấn công Prompt Injection để moi API Key -> Rào chắn vô hiệu hóa, bảo vệ tuyệt đối bí mật hệ thống.
 - **TC09 (Khả Năng Chịu Lỗi):** Tắt dịch vụ MySQL đột ngột -> Hệ thống tự động chuyển sang In-Memory Fallback không bị crash.
 - **TC10 (An Toàn Dược Lý):** Tiêm Dexamethasone cho heo nái mang thai -> Hệ thống phát cảnh báo nguy cơ sảy thai và từ chối kê đơn.
+- **TC11 (Nhiệm vụ 4.1 - Lịch Tiêm Quá Hạn):** Phát hiện lịch tiêm vắc xin có hạn trước ngày hiện tại nhưng chưa hoàn thành (`dueDate < today`) -> Hệ thống tự động kích hoạt badge đỏ nhấp nháy `QUÁ HẠN X NGÀY` trên giao diện và đưa vào danh sách cảnh báo khẩn cấp.
+- **TC12 (Nhiệm vụ 4.2 - Cân Nặng Bất Thường):** Phát hiện sụt giảm thể trọng đột ngột (>15% trong 7 ngày, ví dụ bò từ 540kg xuống 435kg) -> Kích hoạt cảnh báo bất thường thể trọng, yêu cầu khám lâm sàng loại trừ mất nước cấp tính hoặc viêm dạ cỏ.
+- **TC13 (Nhiệm vụ 2.1 - Kiểm Thử RBAC Chặn 403):** Kỹ sư chăn nuôi hoặc Nhân viên gửi yêu cầu `DELETE /api/animals/:id` -> Backend chặn bằng mã `HTTP 403 Forbidden`, bảo vệ tính toàn vẹn dữ liệu tài sản.
 
 ### 5.2. So sánh thực nghiệm các phiên bản Prompt (Tiêu chí 3.2)
 Kết quả kiểm thử thực nghiệm trên 100 ca bệnh thú y so sánh giữa Prompt v1, v2 và v3:
