@@ -6,20 +6,6 @@
 
 ---
 
-## 📋 CHECKLIST ĐÁP ỨNG TIÊU CHÍ CHẤM ĐIỂM (10.0 / 10.0)
-
-| Tiêu Chí Đánh Giá | Điểm | Bằng Chứng Kỹ Thuật Trong Repo | Trạng Thái |
-| :--- | :---: | :--- | :---: |
-| **Tiêu chí 1: Quyển báo cáo kỹ thuật** (1.1 Nghiệp vụ; 1.2 Yêu cầu chức năng; 1.3 Kiến trúc & CSDL 3NF; 1.4 Lý giải vị trí AI) | **3.0** | `docs/bao-cao/BAO_CAO_DO_AN_MON_HOC.md` (6 chương chi tiết, sơ đồ ERD, Mermaid architecture, ma trận ánh xạ CLO1-CLO5 / PLO7). | ✅ **100% Đạt** |
-| **Tiêu chí 2: Sản phẩm phần mềm do AI tạo ra** | **7.0** |  |  |
-| *2.1. Hoàn thiện hệ thống và chức năng AI* | **2.0** | Quản lý đàn (thẻ tai RFID), chuồng trại IoT, kho dược phẩm, bệnh án số, phòng khám AI chẩn đoán phân biệt %, tính liều theo thể trọng, RBAC 3 vai trò (`src/components/`, `src/context/FarmContext.tsx`). | ✅ **100% Đạt** |
-| *2.2. Thiết kế Agent AI cho SDLC (AI Software Factory)* | **4.0** | `sdlc-factory/` gồm Context Engineering 4 tầng (`context/`), Dây chuyền 5 Trạm Agent (`stations/`), Bộ kiểm thử tự động Unit/Integration (`tests/runAllTests.ts`), và giao diện trực quan `SdlcFactoryView.tsx`. | ✅ **100% Đạt** |
-| *2.3. Đóng gói, vận hành và theo dõi sản phẩm* | **1.0** | Dockerfile multi-stage (`deploy/docker/`), `docker-compose.yml`, Endpoint `/api/health` & `/api/system/metrics`, Script 1-click `scripts/run_all.bat`. | ✅ **100% Đạt** |
-| **Tiêu chí 3: Thực nghiệm, kiểm thử và đánh giá** (So sánh Prompt v1-v2-v3, 10 Test Cases TC01-TC10, Guardrails) | Tích hợp | `docs/prompt-ab-testing/SO_SANH_PHIEN_BAN_PROMPT.md`, `prompts/benchmark/`, `tests/scenarios/testCasesTC01_TC10.ts`, view `PromptComparisonView.tsx`. | ✅ **100% Đạt** |
-| **Tiêu chí 4 & 5: Sản phẩm, README, Git & Đạo đức AI** | Tích hợp | `README.md`, Git commit theo Conventional Commits, nguyên tắc Human-in-the-Loop, rào chắn an toàn dược lý thú y. | ✅ **100% Đạt** |
-
----
-
 ## 🗂️ CẤU TRÚC THƯ MỤC CHUẨN MONOREPO
 
 ```
