@@ -62,6 +62,20 @@ FarmAI-main/
 
 ---
 
+## 🛠️ CÔNG NGHỆ VÀ DỊCH VỤ SỬ DỤNG (TECH STACK)
+
+| Phân hệ / Tầng | Công nghệ / Ngôn ngữ | Phiên bản | Vai trò & Trách nhiệm trong hệ thống |
+| :--- | :--- | :---: | :--- |
+| **Frontend (Giao diện)** | React, TypeScript, Vite, TailwindCSS | React 19, TS 5.x, Tailwind v4 | Giao diện SPA trực quan: Quản lý đàn gia súc/gia cầm, Dashboard IoT chuồng trại, Phòng khám thú y AI, Báo cáo tăng trưởng FCR, Trạm điều khiển SDLC Factory. |
+| **Backend API Gateway** | Node.js, Express, TSX | Node.js 20 LTS, Express 4.x | Cổng điều phối API RESTful, phân quyền vai trò (RBAC), kiểm duyệt đầu vào (Input Sanitizer), kết nối CSDL và bảo vệ rào chắn an toàn (Guardrails). |
+| **Multi-Agent Service** | Python, Flask, Pydantic | Python 3.11+, Flask 3.x | Hệ thống Đa tác tử gồm 7 Agents chuyên môn hóa: Orchestrator, Analyst, Database, RAG, Reasoning, Critic (phản biện), Response (định dạng). |
+| **Trí tuệ nhân tạo (AI)** | Google Gemini API, ChromaDB | `@google/genai ^2.4`, ChromaDB | Suy luận lâm sàng thú y, tóm tắt dịch tễ toàn đàn, tính liều lượng theo cân nặng cá thể, Vector Database RAG truy xuất dược điển thú y. |
+| **Cơ sở dữ liệu** | MySQL 8.0, In-Memory Fallback | MySQL 8.0 (InnoDB, 3NF) | CSDL quan hệ 10 bảng (users, animals, barns, care_tasks, inventory, health_logs, sales_records...); Có cơ chế Fallback tự phục hồi khi mất kết nối. |
+| **Đóng gói & Vận hành** | Docker, Docker Compose | Docker Compose v2 | Containerization toàn diện cụm 3 dịch vụ: `farmpro_mysql` (port 3306), `farmpro_multi_agent` (port 5050), `farmpro_web_app` (port 3000). |
+| **Kiểm thử tự động** | TSX Test Runner, Pytest | Unit & Integration | Kiểm thử tự động tính liều thuốc, 13 ca kịch bản nghiệp vụ (TC01–TC13), kiểm thử rào chắn an ninh, bắt lỗi lịch tiêm quá hạn và sụt cân bất thường. |
+
+---
+
 ## 🚀 HƯỚNG DẪN CÀI ĐẶT & CHẠY DỰ ÁN
 
 ### Cách 1: Khởi động 1-Click bằng Docker Compose (Khuyên dùng)
