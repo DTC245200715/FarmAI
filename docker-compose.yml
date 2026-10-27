@@ -23,7 +23,7 @@ services:
   multi_agent_backend:
     build:
       context: .
-      dockerfile: Dockerfile.flask
+      dockerfile: deploy/docker/Dockerfile.flask
     container_name: farmpro_multi_agent
     restart: always
     environment:
@@ -43,7 +43,7 @@ services:
   web_app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: deploy/docker/Dockerfile
     container_name: farmpro_web_app
     restart: always
     environment:

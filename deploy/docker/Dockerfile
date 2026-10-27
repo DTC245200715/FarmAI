@@ -21,7 +21,9 @@ RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server.ts ./server.ts
 COPY --from=build /app/src/server ./src/server
-COPY --from=build /app/src/prompts ./src/prompts
+COPY --from=build /app/sdlc-factory ./sdlc-factory
+COPY --from=build /app/prompts ./prompts
+COPY --from=build /app/tests ./tests
 
 EXPOSE 3000
 

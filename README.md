@@ -2,7 +2,7 @@
 > **Tên đề tài/Dự án:** Hệ thống quản lý chăn nuôi có tích hợp AI  
 > **Hệ sinh thái:** FarmPro AI & SDLC AI Agent Factory  
 > **Học phần:** Ứng Dụng Trí Tuệ Nhân Tạo – Trường ĐH Công Nghệ Thông Tin & Truyền Thông (ICTU) – Đại Học Thái Nguyên  
-> **Giảng viên hướng dẫn:** ThS. Nguyễn Đình Dũng | **Lớp:** K23.K1.CNTT K23B
+> **Giảng viên hướng dẫn:**  Nguyễn Đình Dũng | **Lớp:** K23.K1.CNTT K23B
 
 ---
 
@@ -80,25 +80,25 @@ npm run dev
 
 #### Bước 2: Khởi động Python Multi-Agent Backend (Port 5050 - Tùy chọn)
 ```bash
-cd multi_agent_product_system
+cd services/mas
 pip install -r requirements.txt
 python app.py
 ```
 *(Nếu không chạy Python backend, Master Server sẽ tự động kích hoạt bộ đệm mô phỏng In-Memory Fallback mà không làm gián đoạn bất kỳ trải nghiệm nào).*
 
-Hoặc đơn giản nhấp đúp chuột vào file **`run_all.bat`** để hệ thống tự động khởi chạy toàn bộ!
+Hoặc đơn giản nhấp đúp chuột vào file **`scripts/run_all.bat`** (hoặc `run_all.bat`) để hệ thống tự động khởi chạy toàn bộ!
 
 ---
 
 ## 🧪 Tài Liệu Báo Cáo & Thực Nghiệm Kèm Theo
 
-1. 📘 **[Quyển Báo Cáo Kỹ Thuật Đồ Án Môn Học](./BAO_CAO_DO_AN_MON_HOC.md)**  
+1. 📘 **[Quyển Báo Cáo Kỹ Thuật Đồ Án Môn Học](./docs/bao-cao/BAO_CAO_DO_AN_MON_HOC.md)**  
    *Đáp ứng 100% các tiêu chí chuẩn đầu ra CLO1, CLO2, CLO3, CLO4, CLO5 và PLO7 (Thang điểm 10/10).*
-2. 🔬 **[Báo Cáo So Sánh Các Phiên Bản Prompt (A/B Testing)](./SO_SANH_PHIEN_BAN_PROMPT.md)**  
+2. 🔬 **[Báo Cáo So Sánh Các Phiên Bản Prompt (A/B Testing)](./docs/prompt-ab-testing/SO_SANH_PHIEN_BAN_PROMPT.md)**  
    *Đối sánh định lượng và định tính giữa Prompt v1, Prompt v2 và Prompt v3 (Tiêu chí 3.2).*
-3. 🛡️ **[Báo Cáo Kiểm Thử Thực Nghiệm TC01 - TC10](./HUONG_DAN_KIEM_THU_TC01_TC10.md)**  
+3. 🛡️ **[Báo Cáo Kiểm Thử Thực Nghiệm TC01 - TC10](./docs/kiem-thu/HUONG_DAN_KIEM_THU_TC01_TC10.md)**  
    *Chi tiết 10 kịch bản kiểm thử đúng, sai, biên, rào chắn an ninh và chống Hallucination.*
-4. 🗄️ **[Hướng Dẫn Cài Đặt MySQL Trong VSCode](./HUONG_DAN_CAI_DAT_MYSQL_VSCODE.md)**  
+4. 🗄️ **[Hướng Dẫn Cài Đặt MySQL Trong VSCode](./docs/huong-dan/HUONG_DAN_CAI_DAT_MYSQL_VSCODE.md)**  
    *Hướng dẫn cấu hình kết nối cơ sở dữ liệu quan hệ.*
 
 ---

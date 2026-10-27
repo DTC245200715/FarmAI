@@ -9,7 +9,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PROMPT_FILE = path.resolve(__dirname, '..', 'prompts', 'requirement_agent.md');
+const PROMPT_FILE = path.resolve(__dirname, '..', '..', 'prompts', 'sdlc', 'requirement_agent.md');
 
 export interface DecomposedTask {
   id: string;

@@ -9,7 +9,7 @@
 ### ĐỀ TÀI: HỆ THỐNG QUẢN LÝ CHĂN NUÔI CÓ TÍCH HỢP AI (FARMPRO AI & SDLC AGENT FACTORY)
 
 * **Giảng viên hướng dẫn:** ThS. Nguyễn Đình Dũng  
-* **Lớp:** K23.K1.CNTT K23K  
+* **Lớp:** K23.K1.CNTT K23B  
 * **Học kỳ / Năm học:** Học kỳ 1 – Năm học 2026-2027  
 * **Mã chuẩn đầu ra đáp ứng:** CLO1, CLO2, CLO3, CLO4, CLO5 | PLO7 (PI 7.1, PI 7.2, PI 7.3)  
 

@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-COPY multi_agent_product_system/requirements.txt ./
+COPY services/mas/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY multi_agent_product_system/ ./
+COPY services/mas/ ./
 
 ENV PORT=5050
 ENV PYTHONUNBUFFERED=1
