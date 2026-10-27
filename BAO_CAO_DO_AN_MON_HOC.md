@@ -6,7 +6,7 @@
 
 # BÁO CÁO KỸ THUẬT ĐỒ ÁN MÔN HỌC
 ## HỌC PHẦN: ỨNG DỤNG TRÍ TUỆ NHÂN TẠO
-### ĐỀ TÀI: HỆ THỐNG QUẢN TRỊ TRANG TRẠI THÔNG MINH KẾT HỢP NHÀ MÁY PHÁT TRIỂN PHẦN MỀM ĐA TÁC TỬ (FARMPRO AI & SDLC AGENT FACTORY)
+### ĐỀ TÀI: HỆ THỐNG QUẢN LÝ CHĂN NUÔI CÓ TÍCH HỢP AI (FARMPRO AI & SDLC AGENT FACTORY)
 
 * **Giảng viên hướng dẫn:** ThS. Nguyễn Tuấn Anh  
 * **Lớp:** K23.K1.CNTT K23K  
@@ -330,3 +330,4 @@ Dự án **FarmPro AI** đã hoàn thành toàn diện và xuất sắc 100% cá
 3. Triển khai kiến trúc Multi-Agent 7 tác tử chuyên môn hóa có cơ chế tự phản biện và phục hồi sự cố.
 4. Thực nghiệm khoa học so sánh Prompt A/B Test và bộ 10 ca kiểm thử đúng - sai - biên.
 5. Đóng gói Containerization và sẵn sàng triển khai vận hành thực tế.
+

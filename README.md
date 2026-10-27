@@ -1,13 +1,14 @@
-# 🌾 FarmPro AI & SDLC Agent Factory
-> **Hệ Thống Quản Trị Trang Trại Thông Minh Kết Hợp Nhà Máy Phát Triển Phần Mềm Đa Tác Tử**  
-> Học phần: **Ứng Dụng Trí Tuệ Nhân Tạo** – Trường ĐH Công Nghệ Thông Tin & Truyền Thông (ICTU) – Đại Học Thái Nguyên  
-> Giảng viên hướng dẫn: **ThS. Nguyễn Tuấn Anh** | Lớp: **K23.K1.CNTT K23K**
+# 🌾 DỰ ÁN: HỆ THỐNG QUẢN LÝ CHĂN NUÔI CÓ TÍCH HỢP AI (FARMPRO AI)
+> **Tên đề tài/Dự án:** Hệ thống quản lý chăn nuôi có tích hợp AI  
+> **Hệ sinh thái:** FarmPro AI & SDLC AI Agent Factory  
+> **Học phần:** Ứng Dụng Trí Tuệ Nhân Tạo – Trường ĐH Công Nghệ Thông Tin & Truyền Thông (ICTU) – Đại Học Thái Nguyên  
+> **Giảng viên hướng dẫn:** ThS. Nguyễn Tuấn Anh | **Lớp:** K23.K1.CNTT K23K
 
 ---
 
 ## 📌 Tổng Quan Hệ Thống
 
-**FarmPro AI** là giải pháp chuyển đổi số toàn diện cho trang trại chăn nuôi thông minh (Bò thịt, Bò sữa, Heo nái, Heo thịt, Gia cầm) tuân thủ tiêu chuẩn an toàn sinh học VietGAHP, kết hợp hệ thống **SDLC AI Agent Factory** – nhà máy phát triển phần mềm tự động hóa bằng AI đa tác tử.
+**Dự án "Hệ thống quản lý chăn nuôi có tích hợp AI" (FarmPro AI)** là giải pháp chuyển đổi số toàn diện cho trang trại chăn nuôi thông minh (Bò thịt, Bò sữa, Heo nái, Heo thịt, Gia cầm) tuân thủ tiêu chuẩn an toàn sinh học VietGAHP, kết hợp hệ thống **SDLC AI Agent Factory** – nhà máy phát triển phần mềm tự động hóa bằng AI đa tác tử.
 
 ### ✨ Các Tính Năng Cốt Lõi:
 1. **Quản trị chăn nuôi toàn diện:** Quản lý hàng nghìn cá thể vật nuôi theo thẻ tai RFID, theo dõi chuồng trại & tiểu khí hậu IoT, quản lý tồn kho dược phẩm & thức ăn, lịch trình chăm sóc, hồ sơ bệnh án điện tử.
