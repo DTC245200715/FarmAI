@@ -24,16 +24,20 @@ import { runRequirementsAgent } from './services/requirementsAgent.ts';
 import { executeSdlcFactoryPipeline } from './services/sdlc-factory/index.ts';
 import { getPromptComparisonData } from './services/promptBenchmark.ts';
 import { authenticateRole, requireRoles } from './middlewares/authMiddleware.ts';
+import { errorHandler, aiRateLimiter } from './middlewares/errorMiddleware.ts';
+import { sendSuccess, sendError } from './utils/responseHelper.ts';
+import { SYSTEM_CONFIG, BUSINESS_RULES, USER_ROLES } from './config/constants.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../../');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || SYSTEM_CONFIG.DEFAULT_PORT;
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(authenticateRole);
+app.use('/api/ai', aiRateLimiter);
 
 // Farm AI Advisor Endpoint
 app.post('/api/ai/chat', async (req: Request, res: Response) => {
@@ -44,9 +48,10 @@ app.post('/api/ai/chat', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Nội dung tin nhắn không được để trống' });
     }
 
-    // Try Python Flask Backend first if active on port 5000
+    // Try Python Flask Backend first if active on port 5050
     try {
-      const flaskRes = await fetch('http://localhost:5000/api/ai/chat', {
+      const masUrl = process.env.MAS_SERVICE_URL || SYSTEM_CONFIG.DEFAULT_MAS_URL;
+      const flaskRes = await fetch(`${masUrl}/api/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, history, farmContext }),
@@ -227,24 +232,32 @@ app.get('/api/animals', (_req: Request, res: Response) => {
 });
 
 // Thêm mới: Yêu cầu vai trò 'Chủ trang trại' hoặc 'Kỹ sư chăn nuôi' (Nhiệm vụ 2.1 & 2.4)
-app.post('/api/animals', requireRoles(['Chủ trang trại', 'Kỹ sư chăn nuôi']), (req: Request, res: Response) => {
+app.post('/api/animals', requireRoles([USER_ROLES.OWNER, USER_ROLES.TECHNICIAN]), (req: Request, res: Response) => {
   const { tagId, name, species = 'Bò', breed = 'Giống lai', gender = 'Cái', weightKg = 100, barnId = 'barn-1', status = 'healthy', notes = '' } = req.body;
   if (!tagId || typeof tagId !== 'string' || !tagId.trim() || !name || typeof name !== 'string' || !name.trim()) {
-    return res.status(400).json({ error: 'Mã thẻ tai và tên vật nuôi không được để trống' });
+    return sendError(res, 'Mã thẻ tai và tên vật nuôi không được để trống', 400);
   }
 
   const weightNum = Number(weightKg);
-  if (isNaN(weightNum) || weightNum <= 0) {
-    return res.status(400).json({
-      error: 'Dữ liệu không hợp lệ: Cân nặng thể trọng vật nuôi phải là số dương lớn hơn 0 kg.',
-      field: 'weightKg',
-      providedValue: weightKg
-    });
+  if (isNaN(weightNum) || weightNum <= BUSINESS_RULES.ANIMAL.MIN_WEIGHT_KG || weightNum > BUSINESS_RULES.ANIMAL.MAX_WEIGHT_KG) {
+    return sendError(
+      res,
+      'Dữ liệu không hợp lệ: Cân nặng thể trọng vật nuôi phải là số dương lớn hơn 0 kg.',
+      400,
+      null,
+      { field: 'weightKg', providedValue: weightKg }
+    );
   }
 
-  const newAnimal = {
+  const normalizedTag = tagId.trim().toUpperCase();
+  const isDuplicate = serverAnimals.some((a) => a.tagId === normalizedTag && a.salesStatus !== 'sold');
+  if (isDuplicate) {
+    return sendError(res, `Mã thẻ tai ${normalizedTag} đã tồn tại trong danh sách đàn hiện tại!`, 400);
+  }
+
+  const newAnimal: ServerAnimal = {
     id: `an-${Date.now()}`,
-    tagId: tagId.trim().toUpperCase(),
+    tagId: normalizedTag,
     name: name.trim(),
     species,
     breed,
@@ -255,54 +268,70 @@ app.post('/api/animals', requireRoles(['Chủ trang trại', 'Kỹ sư chăn nu�
     status,
     notes,
     lastCheckupDate: new Date().toISOString().split('T')[0],
-    salesStatus: 'active', // 'active' | 'sold'
+    salesStatus: 'active',
   };
   serverAnimals.unshift(newAnimal);
-  return res.status(201).json({ success: true, animal: newAnimal });
+  return sendSuccess(res, newAnimal, 'Thêm mới vật nuôi thành công', 201, { animal: newAnimal });
 });
 
-app.put('/api/animals/:id', requireRoles(['Chủ trang trại', 'Kỹ sư chăn nuôi', 'Bác sĩ thú y']), (req: Request, res: Response) => {
+app.put('/api/animals/:id', requireRoles([USER_ROLES.OWNER, USER_ROLES.TECHNICIAN, USER_ROLES.VET]), (req: Request, res: Response) => {
   const { id } = req.params;
   const index = serverAnimals.findIndex((a) => a.id === id);
   if (index === -1) {
-    return res.status(404).json({ error: 'Không tìm thấy vật nuôi' });
+    return sendError(res, 'Không tìm thấy vật nuôi', 404);
   }
+
+  if (req.body.weightKg !== undefined) {
+    const w = Number(req.body.weightKg);
+    if (isNaN(w) || w <= BUSINESS_RULES.ANIMAL.MIN_WEIGHT_KG || w > BUSINESS_RULES.ANIMAL.MAX_WEIGHT_KG) {
+      return sendError(res, 'Cân nặng thể trọng cập nhật không hợp lệ', 400);
+    }
+  }
+
   serverAnimals[index] = { ...serverAnimals[index], ...req.body };
-  return res.json({ success: true, animal: serverAnimals[index] });
+  return sendSuccess(res, serverAnimals[index], 'Cập nhật thông tin vật nuôi thành công', 200, { animal: serverAnimals[index] });
 });
 
 // Xóa vật nuôi: Chỉ 'Chủ trang trại' có quyền xóa (Nhiệm vụ 2.1 RBAC - Trả về 403 nếu vai trò khác gọi)
-app.delete('/api/animals/:id', requireRoles(['Chủ trang trại']), (req: Request, res: Response) => {
+app.delete('/api/animals/:id', requireRoles([USER_ROLES.OWNER]), (req: Request, res: Response) => {
   const { id } = req.params;
   serverAnimals = serverAnimals.filter((a) => a.id !== id);
-  return res.json({ success: true, deletedId: id });
+  return sendSuccess(res, { deletedId: id }, 'Đã xóa vật nuôi thành công', 200, { deletedId: id });
 });
 
 // Xuất bán vật nuôi (Nhiệm vụ 1.1 & 2.2 - Sales/Export)
 // Chỉ Quản lý / Chủ trại có quyền duyệt xuất bán, kiểm tra thời gian ngưng thuốc
-app.put('/api/animals/:id/sell', requireRoles(['Chủ trang trại']), (req: Request, res: Response) => {
+app.put('/api/animals/:id/sell', requireRoles([USER_ROLES.OWNER]), (req: Request, res: Response) => {
   const { id } = req.params;
   const { salePriceVnd = 0, buyer = 'Thương lái địa phương', weightAtSaleKg } = req.body;
   const index = serverAnimals.findIndex((a) => a.id === id);
   if (index === -1) {
-    return res.status(404).json({ error: 'Không tìm thấy vật nuôi cần xuất bán' });
+    return sendError(res, 'Không tìm thấy vật nuôi cần xuất bán', 404);
   }
 
   const animal = serverAnimals[index];
   if (animal.salesStatus === 'sold') {
-    return res.status(400).json({
-      error: `Cá thể ${animal.tagId} (${animal.name}) đã được xuất bán trước đó!`
-    });
+    return sendError(res, `Cá thể ${animal.tagId} (${animal.name}) đã được xuất bán trước đó!`, 400);
   }
 
   if (animal.status === 'sick' || animal.status === 'isolated') {
-    return res.status(400).json({
-      error: 'CẢNH BÁO AN TOÀN SINH HỌC VIETGAHP: Vật nuôi đang trong phác đồ điều trị bệnh hoặc cách ly y tế, nghiêm cấm xuất bán thịt!'
-    });
+    return sendError(
+      res,
+      'CẢNH BÁO AN TOÀN SINH HỌC VIETGAHP: Vật nuôi đang trong phác đồ điều trị bệnh hoặc cách ly y tế, nghiêm cấm xuất bán thịt!',
+      400
+    );
   }
 
   const numericPrice = Number(salePriceVnd) || 0;
+  if (numericPrice < BUSINESS_RULES.SALES.MIN_PRICE_VND) {
+    return sendError(res, 'Giá xuất bán không thể là số âm', 400);
+  }
+
   const numericWeight = Number(weightAtSaleKg) || animal.weightKg;
+  if (numericWeight <= 0) {
+    return sendError(res, 'Khối lượng xuất bán phải lớn hơn 0 kg', 400);
+  }
+
   const saleDateStr = new Date().toISOString().split('T')[0];
   const formattedPrice = numericPrice.toLocaleString('vi-VN');
   const saleNote = `[ĐÃ XUẤT BÁN] Ngày: ${saleDateStr}, Giá: ${formattedPrice} đ, Người mua: ${buyer}.`;
@@ -319,17 +348,17 @@ app.put('/api/animals/:id/sell', requireRoles(['Chủ trang trại']), (req: Req
     weightAtSaleKg: numericWeight,
   };
 
-  return res.json({
-    success: true,
-    message: `Đã xuất bán thành công cá thể ${animal.tagId} (${animal.name}).`,
-    salesRecord: {
-      animalId: animal.id,
-      tagId: animal.tagId,
-      saleDate: saleDateStr,
-      weightKg: numericWeight,
-      priceVnd: numericPrice,
-      buyer
-    }
+  const salesRecord = {
+    animalId: animal.id,
+    tagId: animal.tagId,
+    saleDate: saleDateStr,
+    weightKg: numericWeight,
+    priceVnd: numericPrice,
+    buyer,
+  };
+
+  return sendSuccess(res, salesRecord, `Đã xuất bán thành công cá thể ${animal.tagId} (${animal.name}).`, 200, {
+    salesRecord,
   });
 });
 
@@ -670,6 +699,9 @@ app.get('/api/system/metrics', async (_req: Request, res: Response) => {
     uptimeHuman: `${Math.floor(process.uptime() / 3600)}h ${Math.floor((process.uptime() % 3600) / 60)}m ${Math.floor(process.uptime() % 60)}s`,
   });
 });
+
+// Centralized Error Handling Middleware
+app.use(errorHandler);
 
 // Vite middleware in dev or static files in prod
 async function startServer() {

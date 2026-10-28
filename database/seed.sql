@@ -84,3 +84,4 @@ INSERT INTO `alerts` (`id`, `alert_type`, `severity`, `title`, `message`, `is_re
 ('alt-03', 'CẢNH BÁO KHO CẠN', 'WARNING', 'Thuốc hạ sốt Anagin-C chạm ngưỡng an toàn', 'Tồn kho chỉ còn 6 lọ (ngưỡng an toàn là 10 lọ), cần đặt hàng thêm.', FALSE);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
