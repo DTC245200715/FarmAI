@@ -14,3 +14,4 @@ venv
 tests
 .DS_Store
 *.log
+

@@ -259,8 +259,8 @@ async function runStep3(): Promise<{ pass: number; fail: number; blocked: number
         method: tc.method,
         headers: {
           'Content-Type': 'application/json',
-          ...tc.headers,
-        },
+          ...(tc.headers as Record<string, string>),
+        } as HeadersInit,
         body: tc.body ? JSON.stringify(tc.body) : undefined,
       });
       const dt = Date.now() - t0;

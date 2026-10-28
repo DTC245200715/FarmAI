@@ -84,7 +84,28 @@ app.post('/api/ai/generate-schedule', async (req: Request, res: Response) => {
 });
 
 // Animals in-memory fallback list
-let serverAnimals = [
+export interface ServerAnimal {
+  id: string;
+  tagId: string;
+  name: string;
+  species: string;
+  breed: string;
+  gender: string;
+  birthDate: string;
+  weightKg: number;
+  barnId: string;
+  status: string;
+  notes?: string;
+  lastCheckupDate?: string;
+  salesStatus?: 'sold' | 'in_herd' | string;
+  salePriceVnd?: number;
+  buyer?: string;
+  saleDate?: string;
+  weightAtSaleKg?: number;
+  [key: string]: any;
+}
+
+let serverAnimals: ServerAnimal[] = [
   {
     id: 'an-1',
     tagId: 'BO-0102',
@@ -267,17 +288,34 @@ app.put('/api/animals/:id/sell', requireRoles(['Chủ trang trại']), (req: Req
   }
 
   const animal = serverAnimals[index];
+  if (animal.salesStatus === 'sold') {
+    return res.status(400).json({
+      error: `Cá thể ${animal.tagId} (${animal.name}) đã được xuất bán trước đó!`
+    });
+  }
+
   if (animal.status === 'sick' || animal.status === 'isolated') {
     return res.status(400).json({
       error: 'CẢNH BÁO AN TOÀN SINH HỌC VIETGAHP: Vật nuôi đang trong phác đồ điều trị bệnh hoặc cách ly y tế, nghiêm cấm xuất bán thịt!'
     });
   }
 
+  const numericPrice = Number(salePriceVnd) || 0;
+  const numericWeight = Number(weightAtSaleKg) || animal.weightKg;
+  const saleDateStr = new Date().toISOString().split('T')[0];
+  const formattedPrice = numericPrice.toLocaleString('vi-VN');
+  const saleNote = `[ĐÃ XUẤT BÁN] Ngày: ${saleDateStr}, Giá: ${formattedPrice} đ, Người mua: ${buyer}.`;
+
   serverAnimals[index] = {
     ...animal,
-    status: 'healthy',
-    notes: `${animal.notes || ''} [ĐÃ XUẤT BÁN] Ngày: ${new Date().toISOString().split('T')[0]}, Giá: ${salePriceVnd.toLocaleString('vi-VN')} đ, Người mua: ${buyer}.`,
+    weightKg: numericWeight,
+    status: animal.status || 'healthy',
+    notes: animal.notes ? `${animal.notes.trim()} | ${saleNote}` : saleNote,
     salesStatus: 'sold',
+    salePriceVnd: numericPrice,
+    buyer,
+    saleDate: saleDateStr,
+    weightAtSaleKg: numericWeight,
   };
 
   return res.json({
@@ -286,9 +324,9 @@ app.put('/api/animals/:id/sell', requireRoles(['Chủ trang trại']), (req: Req
     salesRecord: {
       animalId: animal.id,
       tagId: animal.tagId,
-      saleDate: new Date().toISOString().split('T')[0],
-      weightKg: weightAtSaleKg || animal.weightKg,
-      priceVnd: salePriceVnd,
+      saleDate: saleDateStr,
+      weightKg: numericWeight,
+      priceVnd: numericPrice,
       buyer
     }
   });
