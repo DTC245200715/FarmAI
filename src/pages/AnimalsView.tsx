@@ -27,9 +27,9 @@ import {
 import { useFarm } from '../context/FarmContext';
 import { useToast } from '../context/ToastContext';
 import { Animal, AnimalStatus, Species } from '../types/farm';
-import { HealthBadge } from './ui/HealthBadge';
-import { EmptyState } from './ui/EmptyState';
-import { ConfirmModal } from './ui/ConfirmModal';
+import { HealthBadge } from '../components/ui/HealthBadge';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
 
 export const AnimalsView: React.FC = () => {
   const { animals, barns, addAnimal, updateAnimal, deleteAnimal, sellAnimal, quickDiagnoseAnimal } = useFarm();

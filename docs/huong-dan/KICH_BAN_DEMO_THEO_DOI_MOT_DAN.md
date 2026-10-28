@@ -145,7 +145,7 @@ flowchart TD
   - Quản lý & Xuất bán: [src/components/AnimalsView.tsx](file:///d:/FarmAI-main/FarmAI-main/src/components/AnimalsView.tsx)
   - Cảnh báo quá hạn: [src/components/ScheduleView.tsx](file:///d:/FarmAI-main/FarmAI-main/src/components/ScheduleView.tsx)
   - Báo cáo tăng trưởng FCR AI: [src/components/ReportsView.tsx](file:///d:/FarmAI-main/FarmAI-main/src/components/ReportsView.tsx)
-  - Engine AI lâm sàng & disclaimer: [src/server/vetAdvisorEngine.ts](file:///d:/FarmAI-main/FarmAI-main/src/server/vetAdvisorEngine.ts)
+  - Engine AI lâm sàng & disclaimer: [backend/src/services/vetAdvisorEngine.ts](file:///d:/FarmAI-main/FarmAI-main/backend/src/services/vetAdvisorEngine.ts)
   - Backend bảo vệ quyền & kiểm dịch: [server.ts](file:///d:/FarmAI-main/FarmAI-main/server.ts)
   - Cơ sở dữ liệu quan hệ chuẩn 3NF: [database/schema.mysql.sql](file:///d:/FarmAI-main/FarmAI-main/database/schema.mysql.sql)
 

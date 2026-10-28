@@ -19,13 +19,11 @@ COPY package*.json ./
 RUN npm install --omit=dev
 
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/server.ts ./server.ts
-COPY --from=build /app/src/server ./src/server
-COPY --from=build /app/sdlc-factory ./sdlc-factory
-COPY --from=build /app/prompts ./prompts
+COPY --from=build /app/backend ./backend
+COPY --from=build /app/docs ./docs
 COPY --from=build /app/tests ./tests
 
 EXPOSE 3000
 
-CMD ["npx", "tsx", "server.ts"]
+CMD ["npx", "tsx", "backend/src/server.ts"]
 

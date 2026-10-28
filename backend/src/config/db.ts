@@ -1,6 +1,6 @@
 import mysql, { Pool } from 'mysql2/promise';
 import dotenv from 'dotenv';
-import { PRODUCT_CATALOG, FarmProduct } from './multiAgentSystem.ts';
+import { PRODUCT_CATALOG, FarmProduct } from '../services/multiAgentSystem.ts';
 
 dotenv.config();
 

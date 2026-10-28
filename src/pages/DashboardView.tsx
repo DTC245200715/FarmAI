@@ -23,9 +23,9 @@ import {
 } from 'lucide-react';
 import { useFarm } from '../context/FarmContext';
 import { useToast } from '../context/ToastContext';
-import { HealthBadge } from './ui/HealthBadge';
-import { Skeleton } from './ui/Skeleton';
-import { EmptyState } from './ui/EmptyState';
+import { HealthBadge } from '../components/ui/HealthBadge';
+import { Skeleton } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 
 interface DashboardViewProps {
   onOpenAddAnimal?: () => void;

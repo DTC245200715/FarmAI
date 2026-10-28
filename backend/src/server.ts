@@ -9,24 +9,25 @@ import {
   getAiDiagnosisResult,
   getAiHerdSummary,
   getAiGrowthReport,
-} from './src/server/vetAdvisorEngine.ts';
+} from './services/vetAdvisorEngine.ts';
 import {
   executeMultiAgentPipeline,
   PRODUCT_CATALOG,
   KNOWN_BRANDS,
-} from './src/server/multiAgentSystem.ts';
+} from './services/multiAgentSystem.ts';
 import {
   TEST_CASES,
   runSingleTestCase,
-} from './src/server/multiAgentTestCases.ts';
-import { checkDbConnection, fetchAllProducts } from './src/server/db.ts';
-import { runRequirementsAgent } from './src/server/requirementsAgent.ts';
-import { executeSdlcFactoryPipeline } from './src/server/sdlcFactory.ts';
-import { getPromptComparisonData } from './src/server/promptComparison.ts';
-import { authenticateRole, requireRoles } from './src/server/middlewares/authMiddleware.ts';
+} from './services/multiAgentTestCases.ts';
+import { checkDbConnection, fetchAllProducts } from './config/db.ts';
+import { runRequirementsAgent } from './services/requirementsAgent.ts';
+import { executeSdlcFactoryPipeline } from './services/sdlc-factory/index.ts';
+import { getPromptComparisonData } from './services/promptBenchmark.ts';
+import { authenticateRole, requireRoles } from './middlewares/authMiddleware.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.resolve(__dirname, '../../');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -672,15 +673,15 @@ app.get('/api/system/metrics', async (_req: Request, res: Response) => {
 
 // Vite middleware in dev or static files in prod
 async function startServer() {
-  const distHtmlPath = path.resolve(__dirname, 'dist', 'index.html');
+  const distHtmlPath = path.resolve(ROOT_DIR, 'dist', 'index.html');
   const hasDist = fs.existsSync(distHtmlPath);
   const isProd = process.env.NODE_ENV === 'production' || hasDist;
 
   if (!isProd) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
-      root: __dirname,
-      configFile: path.resolve(__dirname, 'vite.config.ts'),
+      root: ROOT_DIR,
+      configFile: path.resolve(ROOT_DIR, 'vite.config.ts'),
       server: {
         middlewareMode: true,
         watch: null,
@@ -696,7 +697,7 @@ async function startServer() {
         return next();
       }
       try {
-        const indexHtmlPath = path.resolve(__dirname, 'index.html');
+        const indexHtmlPath = path.resolve(ROOT_DIR, 'index.html');
         let template = fs.readFileSync(indexHtmlPath, 'utf-8');
         template = await vite.transformIndexHtml(url, template);
         res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
@@ -705,9 +706,9 @@ async function startServer() {
       }
     });
   } else {
-    app.use(express.static(path.resolve(__dirname, 'dist')));
+    app.use(express.static(path.resolve(ROOT_DIR, 'dist')));
     app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+      res.sendFile(path.resolve(ROOT_DIR, 'dist', 'index.html'));
     });
   }
 

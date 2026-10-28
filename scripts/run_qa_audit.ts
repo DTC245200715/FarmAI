@@ -143,10 +143,10 @@ async function runStep2(): Promise<{ pass: number; fail: number; blocked: number
     fail++;
   }
 
-  // 2. Run Python MAS Tests (services/mas/tests/test_all.py)
-  lines.push('\n--- 2. Python Multi-Agent Tests (services/mas/tests/test_all.py) ---');
+  // 2. Run Python MAS Tests (ai-service/tests/test_all.py)
+  lines.push('\n--- 2. Python Multi-Agent Tests (ai-service/tests/test_all.py) ---');
   try {
-    const out = execSync('python services/mas/tests/test_all.py', {
+    const out = execSync('python ai-service/tests/test_all.py', {
       stdio: 'pipe',
       env: { ...process.env, PYTHONIOENCODING: 'utf-8' },
     }).toString();

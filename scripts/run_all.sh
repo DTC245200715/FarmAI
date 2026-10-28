@@ -9,7 +9,7 @@ NODE_PID=$!
 
 if command -v python3 &> /dev/null; then
     echo "Đang khởi động Python MAS (Port 5050)..."
-    (cd services/mas && python3 app.py) &
+    (cd ai-service && python3 app.py) &
     PYTHON_PID=$!
 fi
 

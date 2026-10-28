@@ -14,7 +14,7 @@ start "FarmPro AI - Web Server" cmd /k "npm run dev"
 echo [2/2] Đang kiểm tra Multi-Agent Backend (Python Flask Port 5050)...
 where python >nul 2>nul
 if %ERRORLEVEL% EQU 0 (
-    start "FarmPro AI - Multi-Agent Backend" cmd /k "cd services\mas && python app.py"
+    start "FarmPro AI - Multi-Agent Backend" cmd /k "cd ai-service && python app.py"
 ) else (
     echo [Lưu ý] Python chưa cài đặt hoặc không nằm trong PATH. Master Server sẽ chạy chế độ In-Memory Simulation an toàn.
 )

@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-COPY services/mas/requirements.txt ./
+COPY ai-service/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY services/mas/ ./
+COPY ai-service/ ./
 
 ENV PORT=5050
 ENV PYTHONUNBUFFERED=1

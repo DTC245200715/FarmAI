@@ -104,7 +104,7 @@ npm run dev
 
 #### Bước 2: Khởi động Python Multi-Agent Backend (Port 5050 - Tùy chọn)
 ```bash
-cd services/mas
+cd ai-service
 pip install -r requirements.txt
 python app.py
 ```
