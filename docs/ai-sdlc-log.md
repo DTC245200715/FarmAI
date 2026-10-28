@@ -1,0 +1,5 @@
+# Nhật ký prompt AI trong SDLC
+
+| Bước | Prompt / ngữ cảnh | Kết quả AI | Lỗi hoặc điểm chưa rõ được phát hiện | Cách người dùng kiểm chứng/sửa | Người thực hiện |
+|---|---|---|---|---|---|
+| 1 — Phân tích nghiệp vụ và yêu cầu | Yêu cầu xây dựng FarmPro AI dựa trên `docs/tai-lieu-tham-khao/AI.pdf`; dùng repo hiện có; soạn yêu cầu chức năng, phi chức năng, RBAC và ghi rõ điểm chưa có căn cứ. | Tổng hợp phần khảo sát và UC01–UC09 thành `docs/phan-tich-yeu-cau-buoc-1.md`; giữ các ngưỡng/công thức chỉ khi có trong PDF; đánh dấu các câu hỏi còn mở. | Báo cáo có mâu thuẫn ba vai trò/“4 vai trò”/Kỹ thuật viên thú y; repo đặt tên vai trò khác; yêu cầu lịch chăm sóc, ngưỡng theo loài, FCR, phân quyền chi tiết và SLA còn thiếu. | Người dùng chốt dùng bò/heo/gà, ba vai trò Admin/Quản lý/Nhân viên; gộp nghiệp vụ Kỹ thuật viên vào Nhân viên và dùng repo `FarmAI-main`. Các điểm còn lại chưa được người dùng kiểm chứng; ghi thành câu hỏi mở, không tự đặt đáp án. | AI hỗ trợ tổng hợp; người dùng chốt phạm vi. Người phụ trách kiểm chứng nghiệp vụ trong nhóm chưa được xác nhận. |
