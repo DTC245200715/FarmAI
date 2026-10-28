@@ -23,7 +23,7 @@ import { checkDbConnection, fetchAllProducts } from './src/server/db.ts';
 import { runRequirementsAgent } from './src/server/requirementsAgent.ts';
 import { executeSdlcFactoryPipeline } from './src/server/sdlcFactory.ts';
 import { getPromptComparisonData } from './src/server/promptComparison.ts';
-import { authenticateRole, requireRoles } from './apps/api/src/middlewares/authMiddleware.ts';
+import { authenticateRole, requireRoles } from './src/server/middlewares/authMiddleware.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
