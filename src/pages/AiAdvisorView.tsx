@@ -29,7 +29,6 @@ import {
 import { useFarm } from '../context/FarmContext';
 import { useToast } from '../context/ToastContext';
 import { MultiAgentView } from './MultiAgentView';
-import { RequirementsAgentView } from './RequirementsAgentView';
 import { Animal, DiagnosisResult } from '../types/farm';
 import { apiClient } from '../services/apiClient';
 
@@ -284,7 +283,7 @@ export const AiAdvisorView: React.FC = () => {
   } = useFarm();
   const { success, error, info } = useToast();
 
-  const [activeSubTab, setActiveSubTab] = useState<'diagnose' | 'chat' | 'scheduler' | 'multi-agent' | 'requirements-agent'>('diagnose');
+  const [activeSubTab, setActiveSubTab] = useState<'diagnose' | 'chat' | 'scheduler' | 'multi-agent'>('diagnose');
 
   // Diagnosis State
   const [selectedAnimalId, setSelectedAnimalId] = useState<string>('');
@@ -320,7 +319,7 @@ export const AiAdvisorView: React.FC = () => {
     return [
       {
         role: 'model',
-        text: `👋 **Xin chào bạn! Tôi là Chuyên Gia Thú Y & Kỹ Thuật Chăn Nuôi FarmPro AI.**\n\nTôi đã kết nối trực tiếp với dữ liệu thời gian thực từ cơ sở dữ liệu trang trại \`farmpro_db\` của bạn:\n- 📊 **Theo dõi sức khỏe tổng đàn:** Nắm rõ từng cá thể đang ốm, sốt, cách ly hoặc mang thai.\n- 🩺 **Chẩn đoán lâm sàng & Phác đồ điều trị:** Liều lượng thuốc tiêm, hoạt chất, thời gian ngưng thuốc.\n- 🌾 **Dinh dưỡng & Phối trộn:** Tối ưu hóa chi phí cám, bổ sung premix, ủ chua phụ phẩm.\n- 📅 **Lịch tiêm phòng & An toàn sinh học:** Lịch vắc-xin VietGAHP và quy trình khử trùng chuồng trại.\n\n👉 *Hãy chọn một gợi ý thông minh bên dưới hoặc hỏi bất kỳ thắc mắc nào!*`,
+        text: `👋 **Xin chào bạn! Tôi là Chuyên Gia Thú Y & Kỹ Thuật Chăn Nuôi FarmPro AI.**\n\nTôi đã kết nối trực tiếp với dữ liệu thời gian thực từ cơ sở dữ liệu trang trại của bạn:\n- 📊 **Theo dõi sức khỏe tổng đàn:** Nắm rõ từng cá thể đang ốm, sốt, cách ly hoặc mang thai.\n- 🩺 **Chẩn đoán lâm sàng & Phác đồ điều trị:** Liều lượng thuốc tiêm, hoạt chất, thời gian ngưng thuốc.\n- 🌾 **Dinh dưỡng & Phối trộn:** Tối ưu hóa chi phí cám, bổ sung premix, ủ chua phụ phẩm.\n- 📅 **Lịch tiêm phòng & An toàn sinh học:** Lịch vắc-xin VietGAHP và quy trình khử trùng chuồng trại.\n\n👉 *Hãy chọn một gợi ý thông minh bên dưới hoặc hỏi bất kỳ thắc mắc nào!*`,
         time: 'Vừa xong',
       },
     ];
@@ -582,8 +581,8 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
         const trace = await apiClient.post('/api/ai/multi-agent/run', { query });
         const advice = trace.final_advice;
         const text = advice?.clinical_protocol
-          ? `🩺 **Phác đồ điều trị Đa Tác Tử (MAS):**\n\n${advice.clinical_protocol}\n\n**Khuyến nghị dược phẩm:**\n${advice.recommendations?.map((r: any) => `- **${r.name}** (${r.brand}): ${r.dosage} (Giá: ${r.price})`).join('\n')}\n\n${advice.withdrawal_warning || ''}`
-          : trace.error || 'Đã hoàn thành phân tích đa tác tử.';
+          ? `🩺 **Phác đồ điều trị chuyên sâu:**\n\n${advice.clinical_protocol}\n\n**Khuyến nghị dược phẩm:**\n${advice.recommendations?.map((r: any) => `- **${r.name}** (${r.brand}): ${r.dosage} (Giá: ${r.price})`).join('\n')}\n\n${advice.withdrawal_warning || ''}`
+          : trace.error || 'Đã hoàn thành phân tích chuyên sâu.';
 
         setMessages((prev) => [
           ...prev,
@@ -636,7 +635,7 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
     const initialGreeting = [
       {
         role: 'model' as const,
-        text: `👋 **Cuộc trò chuyện đã được làm mới.**\n\nTôi đã đồng bộ lại với dữ liệu thời gian thực từ cơ sở dữ liệu \`farmpro_db\`. Bạn hãy đặt câu hỏi hoặc chọn các câu hỏi gợi ý bên dưới để bắt đầu!`,
+        text: `👋 **Cuộc trò chuyện đã được làm mới.**\n\nTôi đã đồng bộ lại với dữ liệu thời gian thực của trang trại. Bạn hãy đặt câu hỏi hoặc chọn các câu hỏi gợi ý bên dưới để bắt đầu!`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ];
@@ -717,19 +716,7 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
               }`}
             >
               <Layers className="w-4 h-4 text-emerald-700" />
-              <span>Đa Tác Tử (MAS)</span>
-            </button>
-
-            <button
-              onClick={() => setActiveSubTab('requirements-agent')}
-              className={`min-h-[44px] px-4 py-2.5 rounded-2xl flex items-center gap-2 transition-all active:scale-95 ${
-                activeSubTab === 'requirements-agent'
-                  ? 'bg-white text-emerald-900 shadow-md font-extrabold'
-                  : 'bg-white/15 text-white hover:bg-white/25'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-emerald-700" />
-              <span>Requirements Agent (SDLC)</span>
+              <span>Cố Vấn Kê Đơn Thuốc</span>
             </button>
           </div>
         </div>
@@ -1306,7 +1293,7 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Đa Tác Tử (MAS)</span>
+                  <span>Tư Vấn Toàn Diện</span>
                 </button>
               </div>
             </div>
@@ -1315,7 +1302,7 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
               {/* Live Farm DB Synchronized Badge */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold shadow-2xs">
                 <Database className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Đã đồng bộ dữ liệu trang trại (<code className="font-mono text-[11px]">farmpro_db</code>)</span>
+                <span>Đã kết nối dữ liệu trang trại</span>
               </div>
 
               {/* Clear Chat Button */}
@@ -1445,7 +1432,7 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
                       Chuyên gia FarmPro AI đang tra cứu dữ liệu trại và phân tích...
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-500 pl-4">Đang truy vấn `farmpro_db` và áp dụng phác đồ thú y thực tiễn...</p>
+                  <p className="text-xs sm:text-sm text-slate-500 pl-4">Đang tra cứu dữ liệu đàn và áp dụng phác đồ thú y thực tiễn...</p>
                 </div>
               </div>
             )}
@@ -1514,7 +1501,6 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
       )}
 
       {activeSubTab === 'multi-agent' && <MultiAgentView />}
-      {activeSubTab === 'requirements-agent' && <RequirementsAgentView />}
     </div>
   );
 };

@@ -546,7 +546,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onOpenAddAnimal })
             {isLoadingSummary ? (
               <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-500">
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
-                <p className="text-xs font-semibold">Đang tổng hợp dữ liệu toàn đàn và truy vấn AI Multi-Agent...</p>
+                <p className="text-xs font-semibold">Đang tổng hợp dữ liệu toàn đàn và phân tích tình hình dịch tễ...</p>
               </div>
             ) : summaryData ? (
               <div className="space-y-4 text-xs">

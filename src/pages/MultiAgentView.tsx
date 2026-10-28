@@ -100,13 +100,17 @@ export const MultiAgentView: React.FC = () => {
       d.setDate(today.getDate() + idx);
       const dateString = d.toISOString().split('T')[0];
 
+      // Remove backend prefixes like "[Multi-Agent]", "Bước 1: "
+      const cleanStep = stepText.replace(/^\[Multi-Agent\]\s*/i, '').replace(/^Bước\s*\d+\s*:\s*/i, '').trim();
+      const taskTitle = `${cleanStep.split('.')[0] || 'Phác đồ điều trị'} (${targetSpecies})`;
+
       return {
-        title: `[Multi-Agent] ${stepText.split(':')[0] || 'Phác đồ điều trị'} cho đàn ${targetSpecies}`,
+        title: taskTitle,
         category: (idx === 1 ? 'Điều trị' : idx === 2 ? 'Cho ăn & Dinh dưỡng' : 'Kiểm tra sức khỏe') as any,
         dueDate: dateString,
         priority: (idx <= 1 ? 'Cao' : 'Trung bình') as any,
         status: 'pending' as const,
-        notes: stepText,
+        notes: stepText.replace(/^\[Multi-Agent\]\s*/i, '').trim(),
         isAiGenerated: true,
       };
     });
@@ -131,36 +135,36 @@ export const MultiAgentView: React.FC = () => {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
               <Cpu className="w-3.5 h-3.5 animate-pulse text-emerald-400" />
-              <span>Kiến Trúc Hệ Thống Đa Tác Tử Chuẩn Hóa</span>
+              <span>Hội Chẩn & Kê Đơn Thuốc Chuyên Sâu</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-              Cố Vấn Nông Nghiệp & Thú Y Đa Tác Tử FarmPro
+              Cố Vấn Điều Trị & Kê Đơn Thuốc FarmPro
             </h1>
             <p className="text-sm text-slate-300 max-w-3xl leading-relaxed">
-              Phối hợp tuần tự và tự sửa sai (Self-Healing) qua 4 tác tử chuyên biệt:
-              <strong className="text-emerald-300"> Tác tử trích xuất yêu cầu (Requirement Agent)</strong> ➔
-              <strong className="text-cyan-300"> Tác tử tra cứu an toàn & Ngữ nghĩa (Search & Vector Agent)</strong> ➔
-              <strong className="text-amber-300"> Tác tử thẩm định & Cơ chế thử lại (Critic Agent)</strong> ➔
-              <strong className="text-emerald-400"> Tác tử quyết định phác đồ & Báo giá (Decision Agent)</strong>.
+              Quy trình hội chẩn 4 bước chuẩn hóa:
+              <strong className="text-emerald-300"> Trích xuất nhu cầu</strong> ➔
+              <strong className="text-cyan-300"> Đối chiếu dược điển</strong> ➔
+              <strong className="text-amber-300"> Thẩm định an toàn sinh học</strong> ➔
+              <strong className="text-emerald-400"> Lập phác đồ & Báo giá</strong>.
             </p>
           </div>
 
           {/* Quick Metrics */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto shrink-0">
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 text-center">
-              <div className="text-xs text-slate-300">Tác tử phối hợp</div>
-              <div className="text-xl font-bold text-emerald-300">4 Tác Tử</div>
-              <div className="text-[10px] text-slate-400">Tuần tự & Độc lập</div>
+              <div className="text-xs text-slate-300">Quy trình hội chẩn</div>
+              <div className="text-xl font-bold text-emerald-300">4 Giai Đoạn</div>
+              <div className="text-[10px] text-slate-400">Tự động & Chuẩn xác</div>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 text-center">
-              <div className="text-xs text-slate-300">Bảo mật truy vấn SQL</div>
+              <div className="text-xs text-slate-300">Dược điển thú y</div>
               <div className="text-xl font-bold text-cyan-300">An Toàn 100%</div>
-              <div className="text-[10px] text-slate-400">Tham số hóa an toàn</div>
+              <div className="text-[10px] text-slate-400">Tiêu chuẩn VietGAHP</div>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 text-center col-span-2 sm:col-span-1">
-              <div className="text-xs text-slate-300">Chuẩn hóa dữ liệu</div>
-              <div className="text-xl font-bold text-amber-300">VietGAHP</div>
-              <div className="text-[10px] text-slate-400">Tự phục hồi đa tầng</div>
+              <div className="text-xs text-slate-300">Kiểm soát chi phí</div>
+              <div className="text-xl font-bold text-amber-300">Tối Ưu Hóa</div>
+              <div className="text-[10px] text-slate-400">Phù hợp ngân sách</div>
             </div>
           </div>
         </div>
@@ -291,9 +295,9 @@ export const MultiAgentView: React.FC = () => {
                       </div>
                       <div>
                         <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                          🎯 Agent 1: Requirement Agent (Trích Xuất Nhu Cầu JSON)
+                          🎯 Bước 1: Trích Xuất & Chuẩn Hóa Yêu Cầu Chăn Nuôi
                           <span className="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md font-medium border border-emerald-200">
-                            Trích xuất chuẩn hóa JSON
+                            Chuẩn hóa thông số
                           </span>
                         </div>
                         <div className="text-xs text-slate-500">
@@ -329,49 +333,30 @@ export const MultiAgentView: React.FC = () => {
                     <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-3">
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                         <div className="bg-white p-2.5 rounded-lg border border-slate-200">
-                          <div className="text-slate-400 text-[10px]">Intent (Ý định)</div>
+                          <div className="text-slate-400 text-[10px]">Mục đích lâm sàng</div>
                           <div className="font-semibold text-slate-800 capitalize">
                             {executionTrace.requirementAgent.data.intent}
                           </div>
                         </div>
                         <div className="bg-white p-2.5 rounded-lg border border-slate-200">
-                          <div className="text-slate-400 text-[10px]">Target Species (Loài)</div>
+                          <div className="text-slate-400 text-[10px]">Loài chỉ định</div>
                           <div className="font-semibold text-emerald-700">
                             {executionTrace.requirementAgent.data.target_species}
                           </div>
                         </div>
                         <div className="bg-white p-2.5 rounded-lg border border-slate-200">
-                          <div className="text-slate-400 text-[10px]">Brand (Hãng yêu cầu)</div>
+                          <div className="text-slate-400 text-[10px]">Hãng dược yêu cầu</div>
                           <div className="font-semibold text-slate-800">
-                            {executionTrace.requirementAgent.data.brand_preference || 'None'}
+                            {executionTrace.requirementAgent.data.brand_preference || 'Toàn hệ thống'}
                           </div>
                         </div>
                         <div className="bg-white p-2.5 rounded-lg border border-slate-200">
-                          <div className="text-slate-400 text-[10px]">Urgency & Confidence</div>
+                          <div className="text-slate-400 text-[10px]">Mức độ khẩn cấp</div>
                           <div className="font-semibold text-amber-600">
                             {executionTrace.requirementAgent.data.urgency} (
                             {(executionTrace.requirementAgent.data.confidence_score * 100).toFixed(0)}%)
                           </div>
                         </div>
-                      </div>
-
-                      {/* Raw JSON Schema display */}
-                      <div className="relative">
-                        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 mb-1">
-                          <span>Dữ liệu cấu trúc JSON (Requirement Agent Output):</span>
-                          <button
-                            onClick={() =>
-                              copyJsonToClipboard(JSON.stringify(executionTrace.requirementAgent.data, null, 2))
-                            }
-                            className="text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-                          >
-                            {copiedJson ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                            {copiedJson ? 'Đã sao chép' : 'Sao chép JSON'}
-                          </button>
-                        </div>
-                        <pre className="p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg overflow-x-auto border border-slate-800">
-                          {JSON.stringify(executionTrace.requirementAgent.data, null, 2)}
-                        </pre>
                       </div>
                     </div>
                   )}
@@ -389,18 +374,18 @@ export const MultiAgentView: React.FC = () => {
                       </div>
                       <div>
                         <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                          🔍 Agent 2: Search & Retrieval Agent (Safe SQL & Vector Semantic Search)
+                          🔍 Bước 2: Tra Cứu Dược Điển & Danh Mục Thuốc Phù Hợp
                           <span className="text-[11px] px-2 py-0.5 bg-cyan-50 text-cyan-700 rounded-md font-medium border border-cyan-200">
-                            Truy vấn an toàn & Ngữ nghĩa
+                            Khớp danh mục dược phẩm
                           </span>
                         </div>
                         <div className="text-xs text-slate-500 flex flex-wrap items-center gap-2">
                           <span>
-                            Đã quét {executionTrace.searchAgent.data.semanticVectorHits?.length || 0} ứng viên qua Vector Search
+                            Đã tìm thấy {executionTrace.searchAgent.data.semanticVectorHits?.length || 0} sản phẩm phù hợp
                           </span>
                           •
                           <span className="text-emerald-700 font-medium">
-                            {executionTrace.searchAgent.data.isSafeParameterized ? 'SQL Parameterized An Toàn' : ''}
+                            {executionTrace.searchAgent.data.isSafeParameterized ? 'Đối chiếu dữ liệu an toàn' : ''}
                           </span>
                         </div>
                       </div>
@@ -420,7 +405,7 @@ export const MultiAgentView: React.FC = () => {
                     <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-4">
                       {/* Safety Badges: SQL Injection & Brand / Budget Handling */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {/* SQL Injection Protection Badge */}
+                        {/* Data Protection Badge */}
                         <div
                           className={`p-3 rounded-lg border text-xs ${
                             executionTrace.searchAgent.data.sqlInjectionDetected
@@ -430,12 +415,12 @@ export const MultiAgentView: React.FC = () => {
                         >
                           <div className="font-semibold flex items-center gap-1.5">
                             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                            Bảo vệ truy vấn SQL
+                            Bảo vệ an toàn dữ liệu trang trại
                           </div>
                           <div className="mt-1 text-[11px]">
                             {executionTrace.searchAgent.data.sqlInjectionDetected
                               ? '⚠️ Phát hiện mẫu ký tự bất thường! Đã kích hoạt cơ chế khử khuẩn tham số hóa an toàn.'
-                              : '✅ Truy vấn tham số hóa hoàn toàn an toàn (:species, :category). Ngăn chặn 100% rò rỉ dữ liệu.'}
+                              : '✅ Dữ liệu được bảo vệ an toàn. Ngăn chặn 100% rủi ro can thiệp trái phép.'}
                           </div>
                         </div>
 
@@ -478,20 +463,10 @@ export const MultiAgentView: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Parameterized SQL Statement Display */}
-                      <div>
-                        <div className="text-[11px] font-semibold text-slate-500 mb-1">
-                          Câu lệnh Parameterized SQL (Safe Execution):
-                        </div>
-                        <pre className="p-3 bg-slate-900 text-cyan-400 font-mono text-xs rounded-lg overflow-x-auto border border-slate-800">
-                          {executionTrace.searchAgent.data.querySql}
-                        </pre>
-                      </div>
-
                       {/* Vector Semantic Search Ranking Table */}
                       <div>
                         <div className="text-[11px] font-semibold text-slate-500 mb-1">
-                          Bảng xếp hạng Vector Semantic Search (Độ tương đồng ngữ nghĩa):
+                          Danh sách sản phẩm được đề xuất theo độ phù hợp lâm sàng:
                         </div>
                         <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
                           <table className="w-full text-xs">
@@ -500,7 +475,7 @@ export const MultiAgentView: React.FC = () => {
                                 <th className="text-left p-2.5">Sản phẩm</th>
                                 <th className="text-left p-2.5">Hãng</th>
                                 <th className="text-left p-2.5">Giá niêm yết</th>
-                                <th className="text-left p-2.5">Điểm tương đồng (Similarity)</th>
+                                <th className="text-left p-2.5">Độ phù hợp</th>
                                 <th className="text-left p-2.5">Lý do khớp</th>
                               </tr>
                             </thead>
@@ -550,9 +525,9 @@ export const MultiAgentView: React.FC = () => {
                       </div>
                       <div>
                         <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                          ⚖️ Agent 3: Critic & Evaluation Agent (Kiểm Định & Cơ Chế Retry)
+                          ⚖️ Bước 3: Thẩm Định An Toàn Sinh Học & Khả Năng Đáp Ứng
                           <span className="text-[11px] px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md font-medium border border-amber-200">
-                            Tự động Thẩm định & Phục hồi
+                            Thẩm định an toàn
                           </span>
                         </div>
                         <div className="text-xs text-slate-500 flex items-center gap-2">
@@ -568,10 +543,10 @@ export const MultiAgentView: React.FC = () => {
                               executionTrace.criticAgent.data.retryCount > 0 ? 'text-amber-700 font-semibold' : 'text-slate-600'
                             }
                           >
-                            Số lần Retry:{' '}
+                            Trạng thái:{' '}
                             {executionTrace.criticAgent.data.retryCount > 0
-                              ? `${executionTrace.criticAgent.data.retryCount} lần (Tự phục hồi thành công)`
-                              : '0 lần (Thành công ngay)'}
+                              ? 'Đã tự động tối ưu hóa phương án'
+                              : 'Đạt chuẩn ngay lần đầu'}
                           </span>
                         </div>
                       </div>
@@ -594,7 +569,7 @@ export const MultiAgentView: React.FC = () => {
                         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-1">
                           <div className="font-bold flex items-center gap-1.5 text-amber-800">
                             <RefreshCw className="w-4 h-4 animate-spin text-amber-600" />
-                            Đã kích hoạt cơ chế Tự phục hồi (Self-Healing Retry):
+                            Đã tự động tối ưu hóa phác đồ điều trị:
                           </div>
                           <ul className="list-disc pl-5 space-y-0.5 text-[11px]">
                             {executionTrace.criticAgent.data.relaxationApplied.map((note: string, i: number) => (
@@ -648,7 +623,7 @@ export const MultiAgentView: React.FC = () => {
                       </div>
                       <div>
                         <div className="text-sm font-bold text-emerald-950 flex items-center gap-2">
-                          🩺 Agent 4: Decision & Advisor Agent (Tổng Hợp Quyết Định & Phác Đồ)
+                          🩺 Bước 4: Tổng Hợp Phác Đồ Điều Trị & Dự Toán Chi Phí
                           <span className="text-[11px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-medium border border-emerald-300">
                             Phác đồ chuẩn hóa VietGAHP
                           </span>
