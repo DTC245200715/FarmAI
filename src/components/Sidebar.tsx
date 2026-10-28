@@ -13,9 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
-  Factory,
-  GitCompare,
-  Layers,
 } from 'lucide-react';
 import { useFarm } from '../context/FarmContext';
 
@@ -53,35 +50,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
           badge: 'AI Smart',
           badgeColor: 'bg-emerald-600 text-white font-extrabold',
           highlight: true,
-        },
-      ],
-    },
-    {
-      title: 'TRÍ TUỆ NHÂN TẠO & ĐA TÁC TỬ',
-      items: [
-        {
-          id: 'multi-agent',
-          label: 'Cố vấn Đa Tác Tử FarmPro',
-          icon: Layers,
-          badge: 'MAS 4 Agents',
-          badgeColor: 'bg-emerald-600 text-white font-bold',
-          highlight: false,
-        },
-        {
-          id: 'prompt-comparison',
-          label: 'Tối ưu Prompt & A/B Test',
-          icon: GitCompare,
-          badge: 'A/B Test',
-          badgeColor: 'bg-teal-600 text-white font-bold',
-          highlight: false,
-        },
-        {
-          id: 'sdlc-factory',
-          label: 'Nhà Máy Tự Động Hóa AI',
-          icon: Factory,
-          badge: 'Tự động hóa',
-          badgeColor: 'bg-indigo-600 text-white font-bold',
-          highlight: false,
         },
       ],
     },
