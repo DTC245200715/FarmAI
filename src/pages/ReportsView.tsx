@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useFarm } from '../context/FarmContext';
+import { apiClient } from '../services/apiClient';
 
 export const ReportsView: React.FC = () => {
   const { animals, productionStats, inventory, tasks } = useFarm();
@@ -47,23 +48,14 @@ export const ReportsView: React.FC = () => {
   const handleGenerateGrowthReport = async () => {
     setIsLoadingGrowth(true);
     try {
-      const res = await fetch('/api/ai/growth-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          species: growthSpecies,
-          initialWeightKg: initWeight,
-          currentWeightKg: curWeight,
-          daysOnFeed: daysFeeding,
-          totalFeedKg: feedTotal,
-        }),
+      const data = await apiClient.post('/api/ai/growth-report', {
+        species: growthSpecies,
+        initialWeightKg: initWeight,
+        currentWeightKg: curWeight,
+        daysOnFeed: daysFeeding,
+        totalFeedKg: feedTotal,
       });
-      const data = await res.json();
-      if (res.ok) {
-        setGrowthReport(data);
-      } else {
-        throw new Error('API error');
-      }
+      setGrowthReport(data);
     } catch {
       const gain = curWeight - initWeight;
       const adg = Number((gain / Math.max(1, daysFeeding)).toFixed(3));

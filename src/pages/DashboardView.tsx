@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useFarm } from '../context/FarmContext';
 import { useToast } from '../context/ToastContext';
+import { aiService } from '../services/farmService';
 import { HealthBadge } from '../components/ui/HealthBadge';
 import { Skeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -54,21 +55,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onOpenAddAnimal })
     setIsHerdSummaryOpen(true);
     setIsLoadingSummary(true);
     try {
-      const res = await fetch('/api/ai/herd-summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSummaryData(data);
-      } else {
-        setSummaryData({
-          executiveSummary: 'Đã hoàn thành phân tích dữ liệu đàn gia súc gia cầm.',
-          biosecurityAlerts: ['Theo dõi sát các cá thể đang điều trị tại Chuồng 3.'],
-          priorityActions: ['Thực hiện khử trùng tiêu độc chuồng trại định kỳ 2 lần/tuần.'],
-          vetDisclaimer: 'Bản phân tích được tạo tự động bởi FarmPro AI dựa trên dữ liệu nhật ký thực tế. Không thay thế chẩn đoán xác nhận của Bác sĩ thú y.',
-        });
-      }
+      const data = await aiService.getHerdSummary(animals);
+      setSummaryData(data);
     } catch {
       setSummaryData({
         executiveSummary: `Toàn trại hiện có ${animals.length} cá thể. Tỷ lệ khỏe mạnh đạt ${healthRate}%.`,

@@ -19,6 +19,7 @@ import {
 } from '../data/mockData';
 
 import { ServerStatus } from '../types/farm';
+import { animalService, systemService } from '../services/farmService';
 
 interface FarmContextType {
   user: UserProfile | null;
@@ -93,36 +94,24 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkServerConnection = async () => {
     const startTime = performance.now();
     try {
-      const res = await fetch('/api/db/status', { signal: AbortSignal.timeout(4000) });
+      const data = await systemService.getDbStatus();
       const latencyMs = Math.round(performance.now() - startTime);
-      if (res.ok) {
-        const data = await res.json();
-        setServerStatus({
-          connected: !!data.connected,
-          host: data.host || 'localhost',
-          database: data.database || 'farmpro_db',
-          mode: data.connected ? 'mysql_live' : 'in_memory_simulation',
-          message: data.message || 'Kết nối bình thường',
-          latencyMs,
-        });
-      } else {
-        setServerStatus({
-          connected: false,
-          host: 'localhost',
-          database: 'farmpro_db',
-          mode: 'offline',
-          message: `Lỗi máy chủ (${res.status})`,
-          latencyMs,
-        });
-      }
-    } catch {
+      setServerStatus({
+        connected: !!data.connected,
+        host: (data as any).host || 'localhost',
+        database: (data as any).database || 'farmpro_db',
+        mode: data.connected ? 'mysql_live' : 'in_memory_simulation',
+        message: data.message || 'Kết nối bình thường',
+        latencyMs,
+      });
+    } catch (err: any) {
       setServerStatus({
         connected: false,
         host: 'localhost',
         database: 'farmpro_db',
         mode: 'in_memory_simulation',
-        message: 'Chạy độc lập (In-Memory simulation)',
-        latencyMs: undefined,
+        message: err.message || 'Chạy độc lập (In-Memory simulation)',
+        latencyMs: Math.round(performance.now() - startTime),
       });
     }
   };
@@ -230,12 +219,9 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadAnimalsFromApi = async () => {
     setIsLoadingAnimals(true);
     try {
-      const res = await fetch('/api/animals', { signal: AbortSignal.timeout(3000) });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.animals && Array.isArray(data.animals) && data.animals.length > 0) {
-          setAnimals(data.animals);
-        }
+      const data = await animalService.getAnimals();
+      if (data && data.animals && Array.isArray(data.animals) && data.animals.length > 0) {
+        setAnimals(data.animals);
       }
     } catch {
       // Offline fallback: keep existing animals from localStorage
@@ -268,18 +254,12 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Attempt backend sync
     try {
-      const res = await fetch('/api/animals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(animalData),
-      });
-      if (res.ok) {
-        const result = await res.json();
-        if (result.animal && result.animal.id) {
-          setAnimals((prev) =>
-            prev.map((a) => (a.id === tempId ? { ...a, id: result.animal.id } : a))
-          );
-        }
+      const result = await animalService.createAnimal(animalData);
+      const created = result?.data?.animal || result?.animal;
+      if (created && created.id) {
+        setAnimals((prev) =>
+          prev.map((a) => (a.id === tempId ? { ...a, id: created.id } : a))
+        );
       }
       return true;
     } catch {
@@ -293,11 +273,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     try {
-      await fetch(`/api/animals/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedFields),
-      });
+      await animalService.updateAnimal(id, updatedFields);
       return true;
     } catch {
       return true;
@@ -319,12 +295,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      await fetch(`/api/animals/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'x-user-role': user?.role || 'Chủ trang trại',
-        },
-      });
+      await animalService.deleteAnimal(id);
       return true;
     } catch {
       return true;
@@ -347,20 +318,12 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const res = await fetch(`/api/animals/${id}/sell`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-role': user?.role || 'Chủ trang trại',
-        },
-        body: JSON.stringify(saleData),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        return { success: false, message: data.error || 'Xuất bán thất bại.' };
+      const res = await animalService.sellAnimal(id, saleData);
+      if (res && res.success === false) {
+        return { success: false, message: res.error || res.message || 'Xuất bán thất bại.' };
       }
-    } catch {
-      // Offline fallback
+    } catch (err: any) {
+      return { success: false, message: err.message || 'Xuất bán thất bại.' };
     }
 
     setAnimals((prev) =>

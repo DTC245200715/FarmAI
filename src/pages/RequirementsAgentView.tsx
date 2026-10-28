@@ -17,6 +17,7 @@ import {
   Bug,
 } from 'lucide-react';
 import { useFarm } from '../context/FarmContext';
+import { apiClient } from '../services/apiClient';
 
 interface DecomposedTask {
   id: string;
@@ -80,14 +81,7 @@ export const RequirementsAgentView: React.FC = () => {
     setAddedTasksSuccess(false);
 
     try {
-      const res = await fetch('/api/ai/requirements-agent/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requirement: textToRun }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Lỗi phân tích Requirements Agent');
+      const data = await apiClient.post('/api/ai/requirements-agent/analyze', { requirement: textToRun });
       setAnalysisResult(data);
     } catch (err: any) {
       console.error('Requirements Agent Error:', err);

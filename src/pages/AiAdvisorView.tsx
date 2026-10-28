@@ -31,6 +31,7 @@ import { useToast } from '../context/ToastContext';
 import { MultiAgentView } from './MultiAgentView';
 import { RequirementsAgentView } from './RequirementsAgentView';
 import { Animal, DiagnosisResult } from '../types/farm';
+import { apiClient } from '../services/apiClient';
 
 // Symptom quick-chips for barn veterinarians (as specifically required)
 const SYMPTOM_CHIPS = [
@@ -475,26 +476,8 @@ export const AiAdvisorView: React.FC = () => {
     const targetAnimal = animals.find((a) => a.id === selectedAnimalId);
 
     try {
-      const res = await fetch('/api/ai/diagnose', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          species: diagSpecies,
-          animalTag: targetAnimal?.tagId || '',
-          animalName: targetAnimal?.name || '',
-          weightKg: diagWeightKg,
-          symptoms: diagSymptoms,
-          symptomChips: selectedChips,
-          fever: diagFever,
-          appetite: diagAppetite,
-          days: diagDays,
-          affectedCount: diagCount,
-          image: diagImage || undefined,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Lỗi khi gọi máy chủ chẩn đoán');
+      const data = await apiClient.post('/api/ai/diagnose', { species: diagSpecies, animalTag: targetAnimal?.tagId || '', animalName: targetAnimal?.name || '', weightKg: diagWeightKg, symptoms: diagSymptoms, symptomChips: selectedChips, fever: diagFever, appetite: diagAppetite, days: diagDays, affectedCount: diagCount, image: diagImage || undefined });
+      
 
       const parsed = safeParseDiagnosisResult(data, diagSpecies, diagWeightKg);
       setDiagnosisResult(parsed);
@@ -596,12 +579,7 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
 
     try {
       if (chatMode === 'multi-agent') {
-        const response = await fetch('/api/ai/multi-agent/run', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query }),
-        });
-        const trace = await response.json();
+        const trace = await apiClient.post('/api/ai/multi-agent/run', { query });
         const advice = trace.final_advice;
         const text = advice?.clinical_protocol
           ? `🩺 **Phác đồ điều trị Đa Tác Tử (MAS):**\n\n${advice.clinical_protocol}\n\n**Khuyến nghị dược phẩm:**\n${advice.recommendations?.map((r: any) => `- **${r.name}** (${r.brand}): ${r.dosage} (Giá: ${r.price})`).join('\n')}\n\n${advice.withdrawal_warning || ''}`
@@ -618,18 +596,7 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
         ]);
       } else {
         // Send last 8 history items for contextual conversation memory
-        const response = await fetch('/api/ai/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: query,
-            history: messages.slice(-8),
-            farmContext: { totalAnimals: animals.length, barnsCount: barns.length },
-          }),
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Lỗi xử lý chat');
+        const data = await apiClient.post('/api/ai/chat', { message: query, history: messages.slice(-8), farmContext: { totalAnimals: animals.length, barnsCount: barns.length } });
 
         setMessages((prev) => [
           ...prev,

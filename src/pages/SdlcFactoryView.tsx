@@ -18,6 +18,7 @@ import {
   Search,
   Zap,
 } from 'lucide-react';
+import { apiClient } from '../services/apiClient';
 
 interface StationResult {
   stationId: string;
@@ -78,14 +79,7 @@ export const SdlcFactoryView: React.FC = () => {
 
     setIsProcessing(true);
     try {
-      const res = await fetch('/api/ai/sdlc-factory/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requirement: textToRun }),
-      });
-
-      if (!res.ok) throw new Error('Lỗi thực thi quy trình SDLC Factory');
-      const data = await res.json();
+      const data = await apiClient.post('/api/ai/sdlc-factory/run', { requirement: textToRun });
       setFactoryResult(data);
       setActiveStationIndex(0);
     } catch (err: any) {

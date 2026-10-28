@@ -13,6 +13,7 @@ import {
   ArrowRight,
   TrendingUp,
 } from 'lucide-react';
+import { apiClient } from '../services/apiClient';
 
 interface PromptVersion {
   version: 'v1' | 'v2' | 'v3';
@@ -51,12 +52,10 @@ export const PromptComparisonView: React.FC = () => {
   const fetchComparison = async (query?: string) => {
     setLoading(true);
     try {
-      const url = query ? `/api/ai/prompt-comparison?query=${encodeURIComponent(query)}` : '/api/ai/prompt-comparison';
-      const res = await fetch(url);
-      if (res.ok) {
-        const json = await res.json();
-        setData(json);
-      }
+      const json = await apiClient.get('/api/ai/prompt-comparison', {
+        params: query ? { query } : undefined,
+      });
+      setData(json);
     } catch (err) {
       console.error('Error fetching prompt comparison:', err);
     } finally {

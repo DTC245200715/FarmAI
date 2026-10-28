@@ -23,6 +23,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useFarm } from '../context/FarmContext';
+import { apiClient } from '../services/apiClient';
 
 export const MultiAgentView: React.FC = () => {
   const { addInventoryItem, addBatchTasks, setActiveTab } = useFarm();
@@ -47,13 +48,7 @@ export const MultiAgentView: React.FC = () => {
     setAddInventorySuccess(false);
     setAddTasksSuccess(false);
     try {
-      const res = await fetch('/api/ai/multi-agent/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Lỗi xử lý Multi-Agent System');
+      const data = await apiClient.post('/api/ai/multi-agent/run', { query: q }, { timeoutMs: 30000 });
       setExecutionTrace(data);
       setActiveStageAccordion(4); // auto-expand decision agent
     } catch (err: any) {
