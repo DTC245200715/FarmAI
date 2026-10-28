@@ -47,7 +47,7 @@ class ApiClient {
       if (userStr) {
         const user = JSON.parse(userStr);
         if (user && user.role) {
-          headers['x-user-role'] = user.role;
+          headers['x-user-role'] = encodeURIComponent(user.role);
         }
       }
     } catch {
@@ -160,3 +160,4 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+

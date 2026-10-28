@@ -21,11 +21,16 @@ declare global {
  * Header hỗ trợ: 'x-user-role' và 'x-user-email' (hoặc Bearer token trong production)
  */
 export function authenticateRole(req: Request, _res: Response, next: NextFunction) {
-  const roleHeader = (req.headers['x-user-role'] as string) || '';
+  let roleHeader = (req.headers['x-user-role'] as string) || '';
   const emailHeader = (req.headers['x-user-email'] as string) || '';
 
+  try {
+    roleHeader = decodeURIComponent(roleHeader);
+  } catch {
+    // Keep raw if decoding fails
+  }
+
   // Default fallback nếu không truyền header là 'Chủ trang trại' cho demo mượt mà
-  // Nhưng nếu client chủ động gửi role 'Nhân viên' hoặc 'Kỹ sư chăn nuôi', middleware sẽ áp dụng nghiêm ngặt
   req.userRole = (roleHeader as UserRole) || 'Chủ trang trại';
   req.userEmail = emailHeader || 'owner@farmpro.vn';
 

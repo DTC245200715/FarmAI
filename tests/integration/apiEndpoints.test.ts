@@ -45,21 +45,21 @@ export async function runApiIntegrationTests(baseUrl = 'http://localhost:3000'):
       method: 'POST',
       path: '/api/animals',
       body: { tagId: '', name: '', weightKg: -10 },
-      headers: { 'x-user-role': 'Chủ trang trại' },
+      headers: { 'x-user-role': encodeURIComponent('Chủ trang trại') },
       expectedStatus: 400,
       description: 'Validate chặn đầu vào không hợp lệ khi tạo vật nuôi (cân nặng âm, tên rỗng)',
     },
     {
       method: 'DELETE',
       path: '/api/animals/an-1',
-      headers: { 'x-user-role': 'Nhân viên' },
+      headers: { 'x-user-role': encodeURIComponent('Nhân viên') },
       expectedStatus: 403,
       description: 'Rào chắn RBAC: Chặn nhân viên chuồng trại xóa dữ liệu vật nuôi (403 Forbidden)',
     },
     {
       method: 'PUT',
       path: '/api/animals/an-5/sell',
-      headers: { 'x-user-role': 'Chủ trang trại' },
+      headers: { 'x-user-role': encodeURIComponent('Chủ trang trại') },
       body: { salePriceVnd: 7500000, buyer: 'HTX' },
       expectedStatus: 400,
       description: 'Rào chắn An toàn sinh học VietGAHP: Chặn xuất bán cá thể đang điều trị bệnh (an-5)',
@@ -133,3 +133,4 @@ export async function runApiIntegrationTests(baseUrl = 'http://localhost:3000'):
     results,
   };
 }
+

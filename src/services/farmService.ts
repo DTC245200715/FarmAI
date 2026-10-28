@@ -73,3 +73,4 @@ export const systemService = {
     return apiClient.get('/api/health', { timeoutMs: 4000 });
   },
 };
+
