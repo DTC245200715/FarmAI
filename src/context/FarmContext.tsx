@@ -81,6 +81,36 @@ interface FarmContextType {
 
 const FarmContext = createContext<FarmContextType | undefined>(undefined);
 
+export const sanitizeTaskTitleAndNotes = <T extends { title?: string; notes?: string }>(item: T): T => {
+  const cleanTitle = (item.title || '')
+    .replace(/\[Multi-Agent\]\s*/gi, '')
+    .replace(/\[MAS\]\s*/gi, '')
+    .replace(/^Bước\s*\d+\s*(\([^)]+\))?\s*:\s*/gi, '')
+    .replace(/^Bước\s*\d+\s*(\([^)]+\))?\s*/gi, '$1 ')
+    .replace(/^Bước\s*\d+\s*:\s*/gi, '')
+    .replace(/^Bước\s*\d+\s*/gi, '')
+    .replace(/^\(([^)]+)\)\s*/, '$1 ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  const cleanNotes = (item.notes || '')
+    .replace(/\[Multi-Agent\]\s*/gi, '')
+    .replace(/\[MAS\]\s*/gi, '')
+    .replace(/^Bước\s*\d+\s*(\([^)]+\))?\s*:\s*/gi, '')
+    .replace(/^Bước\s*\d+\s*(\([^)]+\))?\s*/gi, '$1 ')
+    .replace(/^Bước\s*\d+\s*:\s*/gi, '')
+    .replace(/^Bước\s*\d+\s*/gi, '')
+    .replace(/^\(([^)]+)\)\s*/, '$1 ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  return {
+    ...item,
+    ...(item.title !== undefined ? { title: cleanTitle } : {}),
+    ...(item.notes !== undefined ? { notes: cleanNotes } : {}),
+  };
+};
+
 export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [serverStatus, setServerStatus] = useState<ServerStatus>({
     connected: false,
@@ -141,7 +171,13 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [tasks, setTasks] = useState<CareTask[]>(() => {
     const saved = localStorage.getItem('farmpro_tasks');
-    return saved ? JSON.parse(saved) : INITIAL_TASKS;
+    if (!saved) return INITIAL_TASKS.map((t) => sanitizeTaskTitleAndNotes(t));
+    try {
+      const parsed: CareTask[] = JSON.parse(saved);
+      return parsed.map((t) => sanitizeTaskTitleAndNotes(t));
+    } catch {
+      return INITIAL_TASKS.map((t) => sanitizeTaskTitleAndNotes(t));
+    }
   });
 
   const [inventory, setInventory] = useState<InventoryItem[]>(() => {
@@ -390,14 +426,15 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Task methods
   const addTask = (taskData: Omit<CareTask, 'id'>) => {
     const newTask: CareTask = {
-      ...taskData,
+      ...sanitizeTaskTitleAndNotes(taskData),
       id: `task-${Date.now()}`,
     };
     setTasks((prev) => [newTask, ...prev]);
   };
 
   const updateTask = (id: string, fields: Partial<CareTask>) => {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...fields } : t)));
+    const cleanFields = sanitizeTaskTitleAndNotes(fields);
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...cleanFields } : t)));
   };
 
   const deleteTask = (id: string) => {
@@ -417,7 +454,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addBatchTasks = (newTasksData: Omit<CareTask, 'id'>[]) => {
     const timestamp = Date.now();
     const createdTasks: CareTask[] = newTasksData.map((taskData, idx) => ({
-      ...taskData,
+      ...sanitizeTaskTitleAndNotes(taskData),
       id: `task-${timestamp}-${idx}`,
     }));
     setTasks((prev) => [...createdTasks, ...prev]);

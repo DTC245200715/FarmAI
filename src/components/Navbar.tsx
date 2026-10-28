@@ -16,7 +16,7 @@ import {
   WifiOff,
   RefreshCw,
 } from 'lucide-react';
-import { useFarm } from '../context/FarmContext';
+import { useFarm, sanitizeTaskTitleAndNotes } from '../context/FarmContext';
 import { useToast } from '../context/ToastContext';
 
 interface NavbarProps {
@@ -264,7 +264,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       >
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-semibold">{task.title}</p>
+                          <p className="font-semibold">{sanitizeTaskTitleAndNotes(task).title}</p>
                           <p className="text-[11px] text-slate-500">Hạn: {task.dueDate}</p>
                         </div>
                       </div>

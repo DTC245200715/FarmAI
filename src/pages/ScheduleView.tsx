@@ -15,6 +15,20 @@ import {
 import { useFarm } from '../context/FarmContext';
 import { CareTask } from '../types/farm';
 
+const cleanTaskText = (text?: string): string => {
+  if (!text) return '';
+  return text
+    .replace(/\[Multi-Agent\]\s*/gi, '')
+    .replace(/\[MAS\]\s*/gi, '')
+    .replace(/^Bước\s*\d+\s*(\([^)]+\))?\s*:\s*/gi, '')
+    .replace(/^Bước\s*\d+\s*(\([^)]+\))?\s*/gi, '$1 ')
+    .replace(/^Bước\s*\d+\s*:\s*/gi, '')
+    .replace(/^Bước\s*\d+\s*/gi, '')
+    .replace(/^\(([^)]+)\)\s*/, '$1 ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+};
+
 export const ScheduleView: React.FC = () => {
   const { tasks, addTask, updateTask, deleteTask, toggleTaskCompleted, setActiveTab } = useFarm();
 
@@ -272,7 +286,7 @@ export const ScheduleView: React.FC = () => {
                         isDone ? 'line-through text-stone-400' : 'text-stone-900'
                       }`}
                     >
-                      {task.title}
+                      {cleanTaskText(task.title)}
                     </span>
 
                     {isOverdue && (
@@ -308,7 +322,7 @@ export const ScheduleView: React.FC = () => {
 
                   {task.notes && (
                     <p className={`text-stone-600 ${isDone ? 'line-through text-stone-400' : ''}`}>
-                      {task.notes}
+                      {cleanTaskText(task.notes)}
                     </p>
                   )}
 

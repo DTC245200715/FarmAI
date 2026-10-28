@@ -789,10 +789,10 @@ export async function runDecisionAdvisorAgent(
   });
 
   const clinicalProtocol = [
-    `Bước 1 (Cách ly & Kiểm tra): Kiểm tra thân nhiệt đàn ${requirements.target_species}, cách ly con yếu hoặc có biểu hiện bất thường vào khu chăm sóc riêng.`,
-    `Bước 2 (Can thiệp theo phác đồ): Áp dụng ${products[0]?.name || 'thuốc chỉ định'} theo đúng liều lượng ${products[0]?.dosage || 'chuẩn thú y'}.`,
-    `Bước 3 (Bổ trợ thể trạng): Bổ sung men vi sinh và điện giải giải độc gan thận để tăng sức đề kháng, tránh sốc thuốc.`,
-    `Bước 4 (An toàn sinh học): Khử trùng tiêu độc toàn bộ ô chuồng 2 ngày/lần trong suốt quá trình xử lý.`,
+    `Cách ly & Kiểm tra lâm sàng: Kiểm tra thân nhiệt đàn ${requirements.target_species}, cách ly con yếu hoặc có biểu hiện bất thường vào khu chăm sóc riêng.`,
+    `Can thiệp theo phác đồ chỉ định: Áp dụng ${products[0]?.name || 'thuốc chỉ định'} theo đúng liều lượng ${products[0]?.dosage || 'chuẩn thú y'}.`,
+    `Bổ trợ thể trạng & đề kháng: Bổ sung men vi sinh và điện giải giải độc gan thận để tăng sức đề kháng, tránh sốc thuốc.`,
+    `Thực hiện an toàn sinh học: Khử trùng tiêu độc toàn bộ ô chuồng 2 ngày/lần trong suốt quá trình xử lý.`,
   ];
 
   const safetyWarnings = [
@@ -802,7 +802,7 @@ export async function runDecisionAdvisorAgent(
     '⚠️ Không tự ý tăng liều kháng sinh gấp đôi hoặc pha trộn chung các loại thuốc đối kháng nhau.',
   ];
 
-  let summary = `Dựa trên kết quả phân tích đa tác tử (Multi-Agent System), hệ thống đề xuất giải pháp toàn diện cho đàn ${requirements.target_species}. Tổng chi phí dự kiến: ${totalCost.toLocaleString('vi-VN')} đ.`;
+  let summary = `Dựa trên kết quả phân tích chuyên môn thú y, hệ thống đề xuất giải pháp toàn diện cho đàn ${requirements.target_species}. Tổng chi phí dự kiến: ${totalCost.toLocaleString('vi-VN')} đ.`;
   if (searchResult.brandStatus.brandAlternativeNotice) {
     summary += ` Lưu ý: ${searchResult.brandStatus.brandAlternativeNotice}`;
   }

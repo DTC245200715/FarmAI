@@ -100,9 +100,20 @@ export const MultiAgentView: React.FC = () => {
       d.setDate(today.getDate() + idx);
       const dateString = d.toISOString().split('T')[0];
 
-      // Remove backend prefixes like "[Multi-Agent]", "Bước 1: "
-      const cleanStep = stepText.replace(/^\[Multi-Agent\]\s*/i, '').replace(/^Bước\s*\d+\s*:\s*/i, '').trim();
-      const taskTitle = `${cleanStep.split('.')[0] || 'Phác đồ điều trị'} (${targetSpecies})`;
+      // Remove backend prefixes like "[Multi-Agent]", "Bước 1: ", etc.
+      const cleanStep = stepText
+        .replace(/\[Multi-Agent\]\s*/gi, '')
+        .replace(/\[MAS\]\s*/gi, '')
+        .replace(/^Bước\s*\d+\s*(\([^)]+\))?\s*:\s*/gi, '')
+        .replace(/^Bước\s*\d+\s*(\([^)]+\))?\s*/gi, '$1 ')
+        .replace(/^Bước\s*\d+\s*:\s*/gi, '')
+        .replace(/^Bước\s*\d+\s*/gi, '')
+        .replace(/^\(([^)]+)\)\s*/, '$1 ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
+      const shortTitle = cleanStep.split(/[:.]/)[0] || 'Phác đồ điều trị';
+      const taskTitle = `${shortTitle} cho đàn ${targetSpecies}`;
 
       return {
         title: taskTitle,
@@ -110,7 +121,7 @@ export const MultiAgentView: React.FC = () => {
         dueDate: dateString,
         priority: (idx <= 1 ? 'Cao' : 'Trung bình') as any,
         status: 'pending' as const,
-        notes: stepText.replace(/^\[Multi-Agent\]\s*/i, '').trim(),
+        notes: cleanStep,
         isAiGenerated: true,
       };
     });
@@ -710,7 +721,7 @@ export const MultiAgentView: React.FC = () => {
                               <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">
                                 {i + 1}
                               </span>
-                              <span>{step}</span>
+                              <span>{step.replace(/^\[Multi-Agent\]\s*/gi, '').replace(/^Bước\s*\d+\s*(\([^)]+\))?\s*:\s*/gi, '$1: ').replace(/^Bước\s*\d+\s*/gi, '').trim()}</span>
                             </div>
                           ))}
                         </div>
