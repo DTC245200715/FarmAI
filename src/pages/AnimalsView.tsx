@@ -30,6 +30,7 @@ import { Animal, AnimalStatus, Species } from '../types/farm';
 import { HealthBadge } from '../components/ui/HealthBadge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
+import { HeroModal, HeroButton } from '../components/ui/HeroUIComponents';
 
 export const AnimalsView: React.FC = () => {
   const { animals, barns, addAnimal, updateAnimal, deleteAnimal, sellAnimal, quickDiagnoseAnimal } = useFarm();
@@ -654,35 +655,30 @@ export const AnimalsView: React.FC = () => {
       )}
 
       {/* Modal: Add or Edit Animal */}
-      {(isAddModalOpen || editingAnimal) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200/90 max-h-[90vh] overflow-y-auto space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
-                  <PawPrint className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-lg text-slate-900 tracking-tight">
-                    {editingAnimal ? `Cập Nhật Hồ Sơ: ${editingAnimal.tagId}` : 'Đăng Ký Vật Nuôi Mới Vào Đàn'}
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Nhập thông tin nhận dạng, thể trọng và chuồng nuôi
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setIsAddModalOpen(false);
-                  setEditingAnimal(null);
-                }}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <HeroModal
+        isOpen={Boolean(isAddModalOpen || editingAnimal)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingAnimal(null);
+        }}
+        maxWidth="2xl"
+        title={
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+              <PawPrint className="w-5 h-5" />
             </div>
-
-            <form onSubmit={handleSaveForm} className="space-y-5">
+            <div>
+              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
+                {editingAnimal ? `Cập Nhật Hồ Sơ: ${editingAnimal.tagId}` : 'Đăng Ký Vật Nuôi Mới Vào Đàn'}
+              </h3>
+              <p className="text-xs text-slate-500 font-normal">
+                Nhập thông tin nhận dạng, thể trọng và chuồng nuôi
+              </p>
+            </div>
+          </div>
+        }
+      >
+        <form onSubmit={handleSaveForm} className="space-y-5">
               {/* 2-column layout */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 {/* Tag ID */}
@@ -833,62 +829,92 @@ export const AnimalsView: React.FC = () => {
 
               {/* Form buttons */}
               <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
-                <button
+                <HeroButton
                   type="button"
+                  variant="outline"
                   onClick={() => {
                     setIsAddModalOpen(false);
                     setEditingAnimal(null);
                   }}
-                  className="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
                 >
                   Hủy bỏ
-                </button>
-                <button
+                </HeroButton>
+                <HeroButton
                   type="submit"
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all hover:shadow active:scale-95 flex items-center gap-2"
+                  variant="primary"
+                  startIcon={<Save className="w-4 h-4" />}
                 >
-                  <Save className="w-4 h-4" />
-                  <span>{editingAnimal ? 'Lưu Thay Đổi' : 'Đăng Ký Vật Nuôi'}</span>
-                </button>
+                  {editingAnimal ? 'Lưu Thay Đổi' : 'Đăng Ký Vật Nuôi'}
+                </HeroButton>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </HeroModal>
 
       {/* Modal: View Animal Profile */}
-      {viewingAnimal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200/90 space-y-5">
-            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+      <HeroModal
+        isOpen={Boolean(viewingAnimal)}
+        onClose={() => setViewingAnimal(null)}
+        maxWidth="xl"
+        title={
+          viewingAnimal && (
+            <div className="flex items-start justify-between w-full">
               <div>
                 <span className="font-mono text-xs font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
                   {viewingAnimal.tagId}
                 </span>
-                <h3 className="font-extrabold text-xl text-slate-900 mt-2">{viewingAnimal.name}</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="font-extrabold text-lg text-slate-900 mt-1">{viewingAnimal.name}</h3>
+                <p className="text-xs text-slate-500 font-normal">
                   {viewingAnimal.species} • {viewingAnimal.breed}
                 </p>
               </div>
-              <HealthBadge status={viewingAnimal.status} size="lg" />
+              <HealthBadge status={viewingAnimal.status} size="md" />
             </div>
-
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="p-3 rounded-2xl bg-slate-50">
+          )
+        }
+        footer={
+          viewingAnimal && (
+            <>
+              <HeroButton
+                variant="outline"
+                size="sm"
+                onClick={() => setViewingAnimal(null)}
+              >
+                Đóng
+              </HeroButton>
+              <HeroButton
+                variant="primary"
+                size="sm"
+                startIcon={<Sparkles className="w-4 h-4" />}
+                onClick={() => {
+                  const target = viewingAnimal;
+                  setViewingAnimal(null);
+                  quickDiagnoseAnimal(target);
+                }}
+              >
+                Khám Bệnh Cùng AI
+              </HeroButton>
+            </>
+          )
+        }
+      >
+        {viewingAnimal && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <span className="text-slate-400 text-[10px] block">Thể trọng</span>
                 <strong className="text-slate-800 text-sm">{viewingAnimal.weightKg} kg</strong> ({viewingAnimal.gender})
               </div>
-              <div className="p-3 rounded-2xl bg-slate-50">
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <span className="text-slate-400 text-[10px] block">Vị trí chuồng nuôi</span>
                 <strong className="text-slate-800 text-sm">
                   {barns.find((b) => b.id === viewingAnimal.barnId)?.name || 'Chưa phân chuồng'}
                 </strong>
               </div>
-              <div className="p-3 rounded-2xl bg-slate-50">
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <span className="text-slate-400 text-[10px] block">Ngày sinh dự kiến</span>
                 <strong className="text-slate-800 font-mono">{viewingAnimal.birthDate}</strong>
               </div>
-              <div className="p-3 rounded-2xl bg-slate-50">
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <span className="text-slate-400 text-[10px] block">Khám lâm sàng gần nhất</span>
                 <strong className="text-slate-800 font-mono">
                   {viewingAnimal.lastCheckupDate || 'Chưa ghi nhận'}
@@ -905,58 +931,37 @@ export const AnimalsView: React.FC = () => {
                 <p className="leading-relaxed">{viewingAnimal.notes}</p>
               </div>
             )}
-
-            <div className="pt-2 flex items-center justify-end gap-3">
-              <button
-                onClick={() => setViewingAnimal(null)}
-                className="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
-              >
-                Đóng
-              </button>
-              <button
-                onClick={() => {
-                  const target = viewingAnimal;
-                  setViewingAnimal(null);
-                  quickDiagnoseAnimal(target);
-                }}
-                className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-2 active:scale-95 transition-all"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Khám Bệnh Cùng AI</span>
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </HeroModal>
 
       {/* Modal: Xuất bán vật nuôi */}
-      {sellingAnimal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
-                  <DollarSign className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-base text-slate-900">
-                    Xuất Bán Thương Phẩm: {sellingAnimal.tagId}
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    {sellingAnimal.name} ({sellingAnimal.species} - {sellingAnimal.breed})
-                  </p>
-                </div>
+      <HeroModal
+        isOpen={Boolean(sellingAnimal)}
+        onClose={() => setSellingAnimal(null)}
+        maxWidth="lg"
+        title={
+          sellingAnimal && (
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                <DollarSign className="w-5 h-5" />
               </div>
-              <button
-                onClick={() => setSellingAnimal(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900">
+                  Xuất Bán Thương Phẩm: {sellingAnimal.tagId}
+                </h3>
+                <p className="text-xs text-slate-500 font-normal">
+                  {sellingAnimal.name} ({sellingAnimal.species} - {sellingAnimal.breed})
+                </p>
+              </div>
             </div>
-
+          )
+        }
+      >
+        {sellingAnimal && (
+          <div className="space-y-4">
             {/* Safety check warning if sick or isolated */}
-            {(sellingAnimal.status === 'sick' || sellingAnimal.status === 'isolated') ? (
+            {sellingAnimal.status === 'sick' || sellingAnimal.status === 'isolated' ? (
               <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 text-xs space-y-2">
                 <div className="font-extrabold flex items-center gap-1.5 text-red-700">
                   <AlertTriangle className="w-4 h-4" />
@@ -1014,25 +1019,28 @@ export const AnimalsView: React.FC = () => {
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-2.5">
-                <button
+                <HeroButton
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setSellingAnimal(null)}
-                  className="px-4 py-2 font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
                 >
                   Hủy bỏ
-                </button>
-                <button
+                </HeroButton>
+                <HeroButton
                   type="submit"
-                  disabled={isSubmittingSale || sellingAnimal.status === 'sick' || sellingAnimal.status === 'isolated'}
-                  className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-xs transition-all active:scale-95"
+                  variant="warning"
+                  size="sm"
+                  isLoading={isSubmittingSale}
+                  disabled={sellingAnimal.status === 'sick' || sellingAnimal.status === 'isolated'}
                 >
-                  {isSubmittingSale ? 'Đang xuất bán...' : 'Xác Nhận Xuất Bán'}
-                </button>
+                  Xác Nhận Xuất Bán
+                </HeroButton>
               </div>
             </form>
           </div>
-        </div>
-      )}
+        )}
+      </HeroModal>
 
       {/* Confirm Delete Dialog */}
       <ConfirmModal

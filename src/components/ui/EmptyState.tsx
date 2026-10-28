@@ -1,5 +1,6 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
+import { HeroButton } from './HeroUIComponents';
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -31,20 +32,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {(actionText || secondaryActionText) && (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           {actionText && onAction && (
-            <button
-              onClick={onAction}
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all hover:shadow active:scale-95"
-            >
+            <HeroButton variant="primary" size="sm" onClick={onAction}>
               {actionText}
-            </button>
+            </HeroButton>
           )}
           {secondaryActionText && onSecondaryAction && (
-            <button
-              onClick={onSecondaryAction}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
-            >
+            <HeroButton variant="outline" size="sm" onClick={onSecondaryAction}>
               {secondaryActionText}
-            </button>
+            </HeroButton>
           )}
         </div>
       )}

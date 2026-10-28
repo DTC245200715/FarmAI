@@ -1390,23 +1390,37 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
                     >
                       <span>{msg.time}</span>
                       {isAi && (
-                        <button
-                          onClick={() => copyToClipboard(msg.text, idx)}
-                          className="bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 shadow-2xs hover:shadow-xs active:scale-95"
-                          title="Sao chép câu trả lời"
-                        >
-                          {copiedIndex === idx ? (
-                            <>
-                              <Check className="w-4 h-4 text-emerald-600" />
-                              <span className="text-sm text-emerald-700 font-bold">Đã sao chép!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-4 h-4 text-slate-500" />
-                              <span>Sao chép</span>
-                            </>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => copyToClipboard(msg.text, idx)}
+                            className="bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+                            title="Sao chép câu trả lời"
+                          >
+                            {copiedIndex === idx ? (
+                              <>
+                                <Check className="w-4 h-4 text-emerald-600" />
+                                <span className="text-sm text-emerald-700 font-bold">Đã sao chép!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-4 h-4 text-slate-500" />
+                                <span>Sao chép</span>
+                              </>
+                            )}
+                          </button>
+                          {msg.text.includes('Không thể kết nối') && (
+                            <button
+                              onClick={() => {
+                                const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+                                if (lastUser) handleSendMessage(lastUser.text);
+                              }}
+                              className="bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 border border-rose-200 cursor-pointer active:scale-95"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Thử lại</span>
+                            </button>
                           )}
-                        </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1440,7 +1454,7 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
           </div>
 
           {/* Chat Input Bar */}
-          <div className="p-4 sm:p-5 bg-white border-t border-slate-200/80">
+          <div className="p-4 sm:p-5 bg-white border-t border-slate-200/80 space-y-2">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -1460,12 +1474,20 @@ ${diagnosisResult.recommendedMeds?.map((m) => `  * ${m.name} (${m.brand || 'Dư�
               <button
                 type="submit"
                 disabled={!inputMessage.trim() || isLoadingChat}
-                className="min-h-[52px] px-7 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 text-base active:scale-95 shrink-0"
+                className="min-h-[52px] px-7 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 text-base active:scale-95 shrink-0 cursor-pointer"
               >
                 <span>Gửi</span>
                 <Send className="w-5 h-5" />
               </button>
             </form>
+            <div className="text-center">
+              <p className="text-[11px] text-slate-500 flex items-center justify-center gap-1.5 max-w-3xl mx-auto">
+                <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>
+                  <strong>Khuyến cáo thú y:</strong> Phác đồ và gợi ý thuốc do FarmPro AI tổng hợp nhằm mục đích tham vấn kỹ thuật. Luôn tham vấn Bác sĩ thú y trực tiếp trước khi can thiệp điều trị xâm lấn.
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       )}
