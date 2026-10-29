@@ -39,22 +39,22 @@ app.use(express.json({ limit: '10mb' }));
 app.use(authenticateRole);
 app.use('/api/ai', aiRateLimiter);
 app.use('/api/ai', (req: Request, res: Response, next: () => void) => {
-  // Allow GET requests, requests with GEMINI_API_KEY, or Multi-Agent System routes (which have deterministic clinical fallback)
-  if (
-    req.method !== 'POST' ||
-    process.env.GEMINI_API_KEY?.trim() ||
-    req.path.startsWith('/multi-agent') ||
-    req.originalUrl.includes('/multi-agent')
-  ) {
-    return next();
+  // Only endpoints strictly requiring remote LLM without local deterministic clinical fallback require GEMINI_API_KEY
+  const strictGeminiRoutes = ['/herd-summary', '/growth-report'];
+  const isStrictRoute = strictGeminiRoutes.some(
+    (r) => req.path.startsWith(r) || req.originalUrl.includes(r)
+  );
+
+  if (req.method === 'POST' && isStrictRoute && !process.env.GEMINI_API_KEY?.trim()) {
+    return sendError(
+      res,
+      'Dịch vụ AI chưa được cấu hình. Hãy thiết lập GEMINI_API_KEY ở phía máy chủ.',
+      503,
+      'GEMINI_API_KEY is not configured'
+    );
   }
 
-  return sendError(
-    res,
-    'Dịch vụ AI chưa được cấu hình. Hãy thiết lập GEMINI_API_KEY ở phía máy chủ.',
-    503,
-    'GEMINI_API_KEY is not configured'
-  );
+  return next();
 });
 
 // Farm AI Advisor Endpoint
@@ -69,16 +69,21 @@ app.post('/api/ai/chat', async (req: Request, res: Response) => {
     // Try Python Flask Backend first if active on port 5050
     try {
       const masUrl = process.env.MAS_SERVICE_URL || SYSTEM_CONFIG.DEFAULT_MAS_URL;
-      const flaskRes = await fetch(`${masUrl}/api/ai/chat`, {
+      const flaskRes = await fetch(`${masUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, history, farmContext }),
-        signal: AbortSignal.timeout(10000),
+        body: JSON.stringify({ question: message, message, history, farmContext }),
+        signal: AbortSignal.timeout(5000),
       });
       if (flaskRes.ok) {
         const flaskData = await flaskRes.json();
-        if (flaskData && flaskData.text) {
-          return res.json({ text: flaskData.text });
+        const responseText =
+          flaskData?.payload?.formatted_response ||
+          flaskData?.payload?.summary ||
+          flaskData?.text ||
+          (typeof flaskData?.payload === 'string' ? flaskData.payload : null);
+        if (responseText) {
+          return res.json({ text: responseText });
         }
       }
     } catch {
