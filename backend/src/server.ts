@@ -38,6 +38,24 @@ const PORT = process.env.PORT || SYSTEM_CONFIG.DEFAULT_PORT;
 app.use(express.json({ limit: '10mb' }));
 app.use(authenticateRole);
 app.use('/api/ai', aiRateLimiter);
+app.use('/api/ai', (req: Request, res: Response, next: () => void) => {
+  // Allow GET requests, requests with GEMINI_API_KEY, or Multi-Agent System routes (which have deterministic clinical fallback)
+  if (
+    req.method !== 'POST' ||
+    process.env.GEMINI_API_KEY?.trim() ||
+    req.path.startsWith('/multi-agent') ||
+    req.originalUrl.includes('/multi-agent')
+  ) {
+    return next();
+  }
+
+  return sendError(
+    res,
+    'Dịch vụ AI chưa được cấu hình. Hãy thiết lập GEMINI_API_KEY ở phía máy chủ.',
+    503,
+    'GEMINI_API_KEY is not configured'
+  );
+});
 
 // Farm AI Advisor Endpoint
 app.post('/api/ai/chat', async (req: Request, res: Response) => {
